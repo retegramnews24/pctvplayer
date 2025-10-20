@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>RetegrApp v2.0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <style>
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+
+    body {
+      display: flex; justify-content: center; align-items: center;
+      font-family: Arial, sans-serif;
+      background: url('https://hd2.tudocdn.net/897898?w=980&h=431') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+    }
+
+    #app {
+      width: 98%; height: 93vh; /* Ridotto del 5% */
+      display: flex; flex-direction: column;
+      background: rgba(0,0,0,0.7); 
+      backdrop-filter: blur(10px);
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .view {
+      flex: 1; display: none; flex-direction: column; gap: 8px; /* Ridotto */
+      overflow-y: auto; padding: 8px; /* Ridotto */
+      position: relative;
+    }
+
+    #menu { display: none; justify-content: center; align-items: center; flex-direction: column; }
+
+    #menuIcon {
+      width: 110px; height: 110px; /* Ridotto */
+      background: url('https://hd2.tudocdn.net/897898?w=980&h=431') center/cover no-repeat;
+      border-radius: 50%;
+      display: flex; justify-content: center; align-items: center;
+      color: #ffeb3b; font-size: 1.4em; font-weight: bold; /* Ridotto */
+      text-shadow: 0 0 8px rgba(0,0,0,0.8);
+      margin-bottom: 15px; border: 2px solid #81d4fa; /* Ridotto */
+    }
+
+    .btn {
+      padding: 15px 20px; font-size: 1.2em; border: none; border-radius: 10px; /* Ridotto */
+      cursor: pointer; font-weight: 600; color: #fff;
+      margin: 8px 0; width: 90%; max-width: none; /* Ridotto */
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
+
+    .btn-start { background: linear-gradient(45deg,#43a047,#66bb6a,#1de9b6); }
+    .btn-about { background: linear-gradient(45deg,#fbc02d,#ffeb3b,#ff9800); color:#000; }
+    .btn-restart { background: linear-gradient(45deg,#e53935,#ff1744,#ff5252); }
+    .btn-antistress { background: linear-gradient(45deg,#7b1fa2,#ab47bc,#ce93d8); }
+
+    h2 { color: #ffeb3b; margin: 6px 0; text-align: center; font-size: 1.5em; } /* Ridotto */
+    h3 { color: #81d4fa; margin: 5px 0; font-size: 1.1em; } /* Ridotto */
+
+    #versionInfo { margin-top: 15px; font-size: 0.9em; color: #ccc; text-align: center; } /* Ridotto */
+
+    .datetime {
+      position: absolute; bottom: 6px; right: 6px; /* Ridotto */
+      font-size: 0.8em; color: #ccc; /* Ridotto */
+    }
+
+    #intro {
+      position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;
+      background: rgba(0,0,0,0.9); z-index: 10; opacity: 1; transition: opacity 600ms ease;
+    }
+    #intro.hide { opacity: 0; pointer-events: none; }
+    #introTitle {
+      font-size: clamp(2rem, 8vw, 4rem);
+      font-weight: 700; letter-spacing: 0.08em; color: #ffeb3b;
+    }
+
+    /* NOTIZIE - RIDOTTO */
+    #news { justify-content: flex-start; }
+    #news h2 { margin: 4px 0; font-size: 1.4em; } /* Ridotto */
+    .news-section {
+      background: rgba(255,255,255,0.1); border-radius: 8px; /* Ridotto */
+      padding: 10px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2); /* Ridotto */
+    }
+    #newsContainer { font-size: 0.9em; } /* Ridotto */
+    #btnBackNews { align-self: center; margin: 8px auto; width: 80%; } /* Ridotto */
+
+    /* ABOUT - RIDOTTO */
+    #about { 
+      justify-content: center; align-items: center; text-align: center;
+      gap: 12px; /* Ridotto */
+    }
+    #about h2 { font-size: 1.8em; margin-bottom: 12px; } /* Ridotto */
+    #about p { 
+      font-size: 1.2em; margin: 10px 0; font-weight: 500; /* Ridotto */
+      background: rgba(255,255,255,0.1); padding: 12px; /* Ridotto */
+      border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); /* Ridotto */
+    }
+    #about a { 
+      color: #81d4fa; font-weight: 600; font-size: 1.2em; /* Ridotto */
+      text-shadow: 0 0 10px rgba(129, 212, 250, 0.5);
+    }
+
+    /* MODAL ANTISTRESS - RIDOTTO */
+    #antistressModal {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+      z-index: 20; justify-content: center; align-items: center;
+    }
+
+    #antistressContent {
+      background: #fff; border-radius: 12px; padding: 6px; /* Ridotto */
+      width: 95%; height: 90vh; position: relative; /* Ridotto */
+      display: flex; flex-direction: column;
+    }
+
+    #closeModal {
+      position: absolute; top: 6px; right: 6px; /* Ridotto */
+      background: #e53935; color: #fff; border: none;
+      border-radius: 6px; padding: 5px 8px; cursor: pointer; /* Ridotto */
+      font-size: 0.8em; z-index: 21; /* Ridotto */
+    }
+
+    #themeBtn {
+      position: absolute; top: 6px; left: 6px; /* Ridotto */
+      background: #0288d1; color: #fff; border: none;
+      border-radius: 6px; padding: 5px 8px; cursor: pointer; /* Ridotto */
+      font-size: 0.8em; z-index: 21; /* Ridotto */
+    }
+
+    /* GIOCO CONNETTI NUMERI - RIDOTTO */
+    #numberConnectContainer {
+      display: flex; flex-direction: column; align-items: center;
+      background: linear-gradient(to bottom, #e0f7fa, #f0f0f0);
+      padding: 4px; border-radius: 8px; /* Ridotto */
+      transition: background 0.3s, color 0.3s;
+      position: relative; width: 100%; height: 100%;
+      overflow: hidden;
+      justify-content: space-between;
+    }
+
+    #numberConnectContainer.dark {
+      background: linear-gradient(to bottom, #1e1e1e, #424242);
+      color: #fff;
+    }
+
+    #numberConnectContainer h1 {
+      margin: 4px 0 2px; font-size: 1.6em; /* Ridotto */
+      color: #00796b; text-align: center; width: 100%;
+    }
+
+    #numberConnectContainer.dark h1 { color: #4fc3f7; }
+
+    #numberConnectContainer #asciiArt {
+      font-family: monospace; color: #444; margin-bottom: 4px; /* Ridotto */
+      font-size: 0.8em; text-align: center; line-height: 1.1; /* Ridotto */
+    }
+
+    #numberConnectContainer.dark #asciiArt { color: #ccc; }
+
+    #numberConnectContainer #controls {
+      background: #ffffff; border-radius: 8px; padding: 6px; /* Ridotto */
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 4px; /* Ridotto */
+      width: 90%; text-align: center;
+    }
+
+    #numberConnectContainer.dark #controls {
+      background: #333; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    #numberConnectContainer #controls label {
+      font-weight: bold; margin-right: 6px; font-size: 1em; /* Ridotto */
+    }
+
+    #numberConnectContainer.dark #controls label { color: #fff; }
+
+    #numberConnectContainer #controls select {
+      padding: 3px 6px; font-size: 0.9em; border-radius: 4px; /* Ridotto */
+      border: 1px solid #ccc;
+    }
+
+    #numberConnectContainer.dark #controls select { 
+      border-color: #666; background: #424242; color: #fff; 
+    }
+
+    #numberConnectContainer #startBtn {
+      margin-top: 6px; padding: 6px 12px; font-size: 0.9em; /* Ridotto */
+      background: #00796b; color: white; border: none;
+      border-radius: 4px; cursor: pointer; /* Ridotto */
+    }
+
+    #numberConnectContainer.dark #startBtn { background: #0288d1; }
+    #numberConnectContainer #startBtn:hover { background: #004d40; }
+    #numberConnectContainer.dark #startBtn:hover { background: #039be5; }
+
+    #numberConnectContainer #scoreboard {
+      margin-bottom: 4px; font-weight: bold; font-size: 1.1em; /* Ridotto */
+      color: #004d40;
+    }
+
+    #numberConnectContainer.dark #scoreboard { color: #4fc3f7; }
+
+    #numberConnectContainer #gameMessage {
+      margin-top: 4px; font-weight: bold; font-size: 1em; /* Ridotto */
+      color: #d32f2f; min-height: 18px; /* Ridotto */
+    }
+
+    #numberConnectContainer.dark #gameMessage { color: #ef5350; }
+
+    #numberConnectContainer #grid {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(6, 1fr); gap: 2px; /* Ridotto */
+      width: 100%; aspect-ratio: 5 / 6; max-height: 50vh; /* Ridotto */
+      margin: 4px auto; touch-action: none; /* Ridotto */
+    }
+
+    #numberConnectContainer .cell {
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; border-radius: 6px; cursor: pointer; /* Ridotto */
+      user-select: none; transition: all 0.3s ease;
+      background: #b2dfdb; color: #004d40;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      font-size: 1em; /* Ridotto */
+    }
+
+    #numberConnectContainer.dark .cell {
+      background: #616161; color: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    #numberConnectContainer .cell:hover {
+      transform: scale(1.05); box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    #numberConnectContainer .cell.selected {
+      outline: 2px solid #00796b;
+      box-shadow: 0 0 8px rgba(0,121,107,0.5); /* Ridotto */
+    }
+
+    #numberConnectContainer.dark .cell.selected {
+      outline: 2px solid #4fc3f7;
+      box-shadow: 0 0 8px rgba(79,195,247,0.5); /* Ridotto */
+    }
+
+    #numberConnectContainer .cell.pulse {
+      animation: pulse 0.3s ease;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    /* PULSANTI AGGIUNTI - RIMOSSO INDIETRO */
+    #gameActions {
+      display: flex; justify-content: center; gap: 6px; /* Ridotto */
+      margin-top: 6px; width: 90%; /* Ridotto */
+    }
+
+    .action-btn {
+      padding: 6px 10px; font-size: 0.8em; border: none; /* Ridotto */
+      border-radius: 4px; cursor: pointer; font-weight: 600; /* Ridotto */
+      color: #fff; transition: all 0.3s ease; flex: 1;
+      max-width: 90px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Ridotto */
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    #saveBtn { background: #4caf50; }
+    #loadBtn { background: #2196f3; }
+  </style>
+</head>
+<body>
+  <div id="intro"><div id="introTitle">RetegrApp</div></div>
+
+  <div id="app">
+    <div id="menu" class="view">
+      <div id="menuIcon">RetegrApp</div>
+      <button class="btn btn-start" id="btnStart">▶️ AVVIA</button>
+      <button class="btn btn-about" id="btnAbout">ℹ️ INFORMAZIONI</button>
+      <button class="btn btn-antistress" id="btnAntistress">🧘 GIOCO ANTISTRESS</button>
+      <button class="btn btn-restart" id="btnRestart">🔄 RIAVVIA</button>
+      <div id="versionInfo">Versione: 2.0</div>
+      <div class="datetime" id="menuDatetime"></div>
+    </div>
+
+    <div id="news" class="view">
+      <h2>📰 ULTIME NOTIZIE</h2>
+      <div id="newsContainer"></div>
+      <button class="btn btn-restart" id="btnBackNews">🔙 TORNA AL MENU</button>
+      <div class="datetime" id="newsDatetime"></div>
+    </div>
+
+    <div id="about" class="view">
+      <h2>ℹ️ INFORMAZIONI</h2>
+      <p>RetegrApp — versione 2.0</p>
+      <p>🔗 Canale Telegram:<br><a href="https://t.me/retegramnews" target="_blank">@retegramnews</a></p>
+      <button class="btn btn-restart" id="btnBack2">🔙 TORNA AL MENU</button>
+      <div class="datetime" id="aboutDatetime"></div>
+    </div>
+
+    <div id="antistressModal">
+      <div id="antistressContent">
+        <button id="closeModal">✖️ CHIUDI</button>
+        <button id="themeBtn">🌗 CAMBIA TEMA</button>
+        <div id="numberConnectContainer">
+          <h1>🎮 CONNETTI I NUMERI</h1>
+          <div id="asciiArt">
+            ═══════════════════════════<br>
+            🔢 CONNETTI I NUMERI<br>
+            🎯 BATTI IL TUO RECORD<br>
+            ═══════════════════════════
+          </div>
+          <div id="controls">
+            <label for="difficulty">SELEZIONA LIVELLO:</label>
+            <select id="difficulty">
+              <option value="easy">🐣 FACILE</option>
+              <option value="medium">🧩 MEDIO</option>
+              <option value="hard">🔥 DIFFICILE</option>
+            </select>
+            <br>
+            <button id="startBtn">▶️ INIZIA PARTITA</button>
+          </div>
+          <div id="scoreboard">🎯 PUNTEGGIO: <span id="score">0</span></div>
+          <div id="grid"></div>
+          <div id="gameMessage"></div>
+          <!-- Pulsanti aggiunti sotto il gioco - RIMOSSO INDIETRO -->
+          <div id="gameActions">
+            <button class="action-btn" id="saveBtn">💾 SALVA</button>
+            <button class="action-btn" id="loadBtn">📂 CARICA</button>
+          </div>
+          <div class="datetime" id="modalDatetime"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const menu = document.getElementById('menu');
+    const news = document.getElementById('news');
+    const about = document.getElementById('about');
+    const newsContainer = document.getElementById('newsContainer');
+    const antistressModal = document.getElementById('antistressModal');
+    const btnAntistress = document.getElementById('btnAntistress');
+    const closeModal = document.getElementById('closeModal');
+    const themeBtn = document.getElementById('themeBtn');
+    const numberConnectContainer = document.getElementById('numberConnectContainer');
+
+    function toggleTheme() {
+      const isDark = numberConnectContainer.classList.toggle('dark');
+      localStorage.setItem('antistressTheme', isDark ? 'dark' : 'light');
+      themeBtn.textContent = isDark ? '☀️ CHIARO' : '🌙 SCURO';
+    }
+
+    if (localStorage.getItem('antistressTheme') === 'dark') {
+      numberConnectContainer.classList.add('dark');
+      themeBtn.textContent = '☀️ CHIARO';
+    } else {
+      themeBtn.textContent = '🌙 SCURO';
+    }
+
+    themeBtn.addEventListener('click', toggleTheme);
+
+    function updateDatetime() {
+      const now = new Date();
+      const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
+      const datetimeStr = now.toLocaleString('it-IT', options).replace(',', '');
+      document.querySelectorAll('.datetime').forEach(el => el.textContent = datetimeStr);
+    }
+    updateDatetime();
+    setInterval(updateDatetime, 60000);
+
+    const intro = document.getElementById("intro");
+    const introTitle = document.getElementById("introTitle");
+    const text = "RetegrApp";
+    const chars = "!<>-_\\/[]{}—=+*^?#________";
+    let frame = 0;
+    let queue = [];
+
+    function randomChar() { return chars[Math.floor(Math.random() * chars.length)]; }
+
+    function scramble(newText) {
+      queue = [];
+      for (let i = 0; i < newText.length; i++) {
+        queue.push({
+          from: text[i] || "",
+          to: newText[i],
+          start: Math.floor(Math.random() * 34),
+          end: Math.floor(Math.random() * 34) + 68
+        });
+      }
+      frame = 0;
+      update();
+    }
+
+    function update() {
+      let output = "";
+      let complete = 0;
+      for (let i = 0; i < queue.length; i++) {
+        let { from, to, start, end, char } = queue[i];
+        if (frame >= end) {
+          complete++;
+          output += to;
+        } else if (frame >= start) {
+          if (!char || Math.random() < 0.28) {
+            char = randomChar();
+            queue[i].char = char;
+          }
+          output += `<span style="color:#81d4fa">${char}</span>`;
+        } else {
+          output += from;
+        }
+      }
+      introTitle.innerHTML = output;
+      if (complete === queue.length) {
+        setTimeout(() => {
+          intro.classList.add("hide");
+          setTimeout(() => {
+            intro.style.display = "none";
+            menu.style.display = "flex";
+          }, 600);
+        }, 1500);
+      } else {
+        frame++;
+        setTimeout(update, 17);
+      }
+    }
+    scramble(text);
+
+    document.getElementById('btnStart').addEventListener('click', () => {
+      menu.style.display = 'none';
+      news.style.display = 'flex';
+      loadNews();
+    });
+    document.getElementById('btnAbout').addEventListener('click', () => {
+      menu.style.display = 'none'; about.style.display = 'flex';
+    });
+    document.getElementById('btnRestart').addEventListener('click', () => {
+      location.reload();
+    });
+    document.getElementById('btnBackNews').addEventListener('click', () => {
+      news.style.display = 'none'; menu.style.display = 'flex';
+    });
+    document.getElementById('btnBack2').addEventListener('click', () => {
+      about.style.display = 'none'; menu.style.display = 'flex';
+    });
+
+    btnAntistress.addEventListener('click', () => {
+      antistressModal.style.display = 'flex';
+      initializeNumberConnect();
+    });
+    closeModal.addEventListener('click', () => {
+      antistressModal.style.display = 'none';
+    });
+
+    function initializeNumberConnect() {
+      const grid = document.getElementById('grid');
+      const difficultySelect = document.getElementById('difficulty');
+      const startBtn = document.getElementById('startBtn');
+      const scoreEl = document.getElementById('score');
+      const gameMessage = document.getElementById('gameMessage');
+      const saveBtn = document.getElementById('saveBtn');
+      const loadBtn = document.getElementById('loadBtn');
+      const rows = 6, cols = 5;
+      let cells = [], selected = [], colorMap = {};
+      let score = 0, lastMergeTime = 0;
+      let isSelecting = false;
+
+      function getRange() {
+        switch (difficultySelect.value) {
+          case 'easy': return 4;
+          case 'medium': return 6;
+          case 'hard': return 9;
+        }
+      }
+
+      function generateNumber() {
+        return Math.pow(2, Math.floor(Math.random() * getRange()) + 1);
+      }
+
+      function getColorForNumber(n) {
+        if (!colorMap[n]) {
+          const hue = (Object.keys(colorMap).length * 47) % 360;
+          colorMap[n] = `hsl(${hue}, 70%, 85%)`;
+        }
+        return colorMap[n];
+      }
+
+      function createGrid() {
+        grid.innerHTML = '';
+        cells = [];
+        selected = [];
+        colorMap = {};
+        score = 0;
+        updateScore();
+        gameMessage.textContent = '';
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            const div = document.createElement('div');
+            div.className = 'cell';
+            div.dataset.x = x;
+            div.dataset.y = y;
+            const num = generateNumber();
+            div.textContent = num;
+            div.style.background = getColorForNumber(num);
+            grid.appendChild(div);
+            cells.push(div);
+          }
+        }
+      }
+
+      function getCell(x, y) {
+        return cells.find(c => parseInt(c.dataset.x) === x && parseInt(c.dataset.y) === y);
+      }
+
+      function areAdjacent(c1, c2) {
+        const x1 = parseInt(c1.dataset.x), y1 = parseInt(c1.dataset.y);
+        const x2 = parseInt(c2.dataset.x), y2 = parseInt(c2.dataset.y);
+        const dx = Math.abs(x1 - x2);
+        const dy = Math.abs(y1 - y2);
+        return dx <= 1 && dy <= 1 && (dx + dy > 0);
+      }
+
+      function addToSelection(cell) {
+        if (selected.length >= 2 || !cell.textContent) return;
+        if (selected.length === 1 && !areAdjacent(selected[0], cell)) return;
+        if (selected.length === 1 && selected[0].textContent !== cell.textContent) return;
+        selected.push(cell);
+        cell.classList.add('selected');
+      }
+
+      function clearSelection() {
+        selected.forEach(c => c.classList.remove('selected'));
+        selected = [];
+      }
+
+      function mergeSelection() {
+        if (selected.length !== 2) return clearSelection();
+        const [c1, c2] = selected;
+        if (!areAdjacent(c1, c2) || c1.textContent !== c2.textContent) return clearSelection();
+        const sum = parseInt(c1.textContent) + parseInt(c2.textContent);
+        c2.textContent = sum;
+        c2.style.background = getColorForNumber(sum);
+        c2.classList.add('pulse');
+        setTimeout(() => c2.classList.remove('pulse'), 300);
+        c1.textContent = '';
+        c1.style.background = numberConnectContainer.classList.contains('dark') ? '#424242' : '#fff';
+        const now = Date.now();
+        const combo = (now - lastMergeTime < 3000) ? 2 : 1;
+        lastMergeTime = now;
+        score += sum * combo;
+        updateScore();
+        clearSelection();
+        setTimeout(() => {
+          dropAndFill();
+          if (!hasAvailableMoves()) {
+            gameMessage.textContent = "Fine partita! Nessuna mossa disponibile.";
+          }
+        }, 300);
+      }
+
+      function dropAndFill() {
+        for (let x = 0; x < cols; x++) {
+          let nums = [];
+          for (let y = rows - 1; y >= 0; y--) {
+            const cell = getCell(x, y);
+            if (cell.textContent) nums.push(cell.textContent);
+          }
+          for (let y = rows - 1; y >= 0; y--) {
+            const cell = getCell(x, y);
+            const val = nums.length > 0 ? nums.shift() : generateNumber();
+            cell.textContent = val;
+            cell.style.background = getColorForNumber(val);
+          }
+        }
+      }
+
+      function updateScore() {
+        scoreEl.textContent = score;
+      }
+
+      function hasAvailableMoves() {
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            const cell = getCell(x, y);
+            if (!cell.textContent) continue;
+            const val = cell.textContent;
+            const neighbors = [
+              getCell(x + 1, y), getCell(x - 1, y), getCell(x, y + 1), getCell(x, y - 1),
+              getCell(x + 1, y + 1), getCell(x + 1, y - 1), getCell(x - 1, y + 1), getCell(x - 1, y - 1)
+            ];
+            if (neighbors.some(n => n && n.textContent === val)) return true;
+          }
+        }
+        return false;
+      }
+
+      function saveGame() {
+        const gameState = {
+          score: score,
+          cells: cells.map(cell => ({
+            x: parseInt(cell.dataset.x),
+            y: parseInt(cell.dataset.y),
+            value: cell.textContent,
+            color: cell.style.background
+          })),
+          difficulty: difficultySelect.value
+        };
+        
+        const dataStr = JSON.stringify(gameState);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', `number-connect-${new Date().toISOString().slice(0,10)}.json`);
+        linkElement.click();
+        gameMessage.textContent = "Gioco salvato!";
+        setTimeout(() => gameMessage.textContent = "", 2000);
+      }
+
+      function loadGame() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = e => {
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            try {
+              const gameState = JSON.parse(event.target.result);
+              score = gameState.score;
+              updateScore();
+              difficultySelect.value = gameState.difficulty;
+              grid.innerHTML = '';
+              cells = [];
+              selected = [];
+              colorMap = {};
+              for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                  const div = document.createElement('div');
+                  div.className = 'cell';
+                  div.dataset.x = x;
+                  div.dataset.y = y;
+                  const cellData = gameState.cells.find(c => c.x === x && c.y === y);
+                  if (cellData) {
+                    div.textContent = cellData.value;
+                    div.style.background = cellData.color;
+                  } else {
+                    const num = generateNumber();
+                    div.textContent = num;
+                    div.style.background = getColorForNumber(num);
+                  }
+                  grid.appendChild(div);
+                  cells.push(div);
+                }
+              }
+              gameMessage.textContent = "Gioco caricato!";
+              setTimeout(() => gameMessage.textContent = "", 2000);
+            } catch (error) {
+              gameMessage.textContent = "Errore nel caricamento!";
+            }
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+      }
+
+      grid.addEventListener('mousedown', e => {
+        e.preventDefault();
+        const cell = e.target.closest('.cell');
+        if (cell) {
+          if (!isSelecting) {
+            clearSelection();
+            isSelecting = true;
+            addToSelection(cell);
+          }
+        }
+      });
+
+      grid.addEventListener('mouseover', e => {
+        if (isSelecting) {
+          const cell = e.target.closest('.cell');
+          if (cell) addToSelection(cell);
+        }
+      });
+
+      grid.addEventListener('mouseup', e => {
+        if (isSelecting) {
+          const cell = e.target.closest('.cell');
+          if (cell && !selected.includes(cell)) addToSelection(cell);
+          mergeSelection();
+          isSelecting = false;
+        }
+      });
+
+      startBtn.addEventListener('click', createGrid);
+      saveBtn.addEventListener('click', saveGame);
+      loadBtn.addEventListener('click', loadGame);
+      createGrid();
+    }
+
+    // FEED NOTIZIE COMPLETO CON TUTTE LE TESTATE
+    const feeds = {
+      "ANSA":"https://www.ansa.it/sito/ansait_rss.xml",
+      "Corriere della Sera":"https://xml2.corriereobjects.it/rss/homepage.xml",
+      "Repubblica":"https://www.repubblica.it/rss/homepage/rss2.0.xml",
+      "La Stampa":"https://www.lastampa.it/rss.xml",
+      "Il Sole 24 Ore":"https://www.ilsole24ore.com/rss/italia--1.xml",
+      "Il Messaggero":"https://www.ilmessaggero.it/rss/home.xml",
+      "Il Fatto Quotidiano":"https://www.ilfattoquotidiano.it/feed/",
+      "Il Giornale":"https://www.ilgiornale.it/rss.xml",
+      "Il Manifesto":"https://ilmanifesto.it/feed/",
+      "Avvenire":"https://www.avvenire.it/rss/avvenire_rss.xml",
+      "Libero Quotidiano":"https://www.liberoquotidiano.it/rss/home.xml",
+      "Il Foglio":"https://www.ilfoglio.it/rss.jsp",
+      "Affaritaliani":"https://www.affaritaliani.it/rss.xml",
+      "Adnkronos":"https://www.adnkronos.com/rss.xml",
+      "AGI":"https://www.agi.it/rss/ultime-notizie.xml",
+      "Rai News":"https://www.rainews.it/dl/rainews/RSS/cronaca.xml",
+      "Fanpage":"https://www.fanpage.it/feed/",
+      "La Gazzetta dello Sport":"https://www.gazzetta.it/rss/home.xml",
+      "Tuttosport":"https://www.tuttosport.com/rss",
+      "Sky TG24":"https://tg24.sky.it/rss/tg24.xml",
+      "Quotidiano Nazionale":"https://www.quotidiano.net/rss",
+      "Il Mattino":"https://www.ilmattino.it/rss/home.xml",
+      "Il Secolo XIX":"https://www.ilsecoloxix.it/rss.xml",
+      "La Nazione":"https://www.lanazione.it/rss",
+      "Il Resto del Carlino":"https://www.ilrestodelcarlino.it/rss",
+      "BBC News":"http://feeds.bbci.co.uk/news/rss.xml",
+      "The Guardian":"https://www.theguardian.com/world/rss",
+      "The Times":"https://www.thetimes.co.uk/environment/rss",
+      "Financial Times":"https://www.ft.com/?format=rss",
+      "Sky News":"https://feeds.skynews.com/feeds/rss/home.xml",
+      "CNN":"http://rss.cnn.com/rss/edition.rss",
+      "New York Times":"https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+      "Washington Post":"https://feeds.washingtonpost.com/rss/world",
+      "Wall Street Journal":"https://feeds.a.dj.com/rss/RSSWorldNews.xml",
+      "Los Angeles Times":"https://www.latimes.com/world-nation/rss2.0.xml",
+      "Bloomberg":"https://www.bloomberg.com/feed/podcast/etf-report.xml",
+      "Forbes":"https://www.forbes.com/most-popular/feed/",
+      "Politico":"https://www.politico.com/rss/politics08.xml",
+      "NBC News":"https://feeds.nbcnews.com/nbcnews/public/news",
+      "CBS News":"https://www.cbsnews.com/latest/rss/main",
+      "Le Monde":"https://www.lemonde.fr/rss/une.xml",
+      "Le Figaro":"https://www.lefigaro.fr/rss/figaro_actualites.xml",
+      "El Mundo":"https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml",
+      "Der Spiegel":"https://www.spiegel.de/international/index.rss",
+      "Die Zeit":"https://newsfeed.zeit.de/index",
+      "Deutsche Welle":"https://rss.dw.com/rdf/rss-en-all",
+      "Handelsblatt":"https://www.handelsblatt.com/contentexport/feed/schlagzeilen",
+      "Al Jazeera":"https://www.aljazeera.com/xml/rss/all.xml",
+      "The Hindu":"https://www.thehindu.com/feeder/default.rss",
+      "Times of India":"https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms"
+    };
+
+    async function loadNews() {
+      newsContainer.innerHTML = "<p style='text-align:center;font-size:0.9em;margin:8px 0;'>Caricamento notizie in corso...</p>";
+      
+      let loadedCount = 0;
+      const totalFeeds = Object.keys(feeds).length;
+      
+      for (const [fonte, url] of Object.entries(feeds)) {
+        try {
+          const section = document.createElement("div");
+          section.className = "news-section";
+          section.innerHTML = `<h3>${fonte}</h3><ul></ul>`;
+          newsContainer.appendChild(section);
+          
+          const res = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(url));
+          const data = await res.json();
+          const doc = new DOMParser().parseFromString(data.contents, "text/xml");
+          const items = doc.querySelectorAll("item");
+          
+          const ul = section.querySelector("ul");
+          items.forEach((item, i) => {
+            if (i < 3) {
+              const title = item.querySelector("title")?.textContent || "Titolo non disponibile";
+              const link = item.querySelector("link")?.textContent || "#";
+              const li = document.createElement("li");
+              li.innerHTML = `<a href="${link}" target="_blank">${title}</a>`;
+              ul.appendChild(li);
+            }
+          });
+          
+          loadedCount++;
+          newsContainer.querySelector('p').textContent = `Caricamento notizie... (${loadedCount}/${totalFeeds})`;
+          
+        } catch {
+          // Continua con le prossime testate anche se una fallisce
+        }
+      }
+      
+      newsContainer.querySelector('p').textContent = `Caricamento completato! ${loadedCount} testate caricate`;
+      setTimeout(() => {
+        if (newsContainer.querySelector('p')) {
+          newsContainer.querySelector('p').remove();
+        }
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
