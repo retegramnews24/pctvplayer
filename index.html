@@ -58,6 +58,7 @@
             gap: 15px;
             flex: 1;
             min-height: 0;
+            overflow: hidden;
         }
         
         .video-player {
@@ -77,6 +78,7 @@
             flex-direction: column;
             gap: 15px;
             min-height: 0;
+            overflow: hidden;
         }
         
         .channel-list, .favorites-list {
@@ -213,6 +215,7 @@
             flex: 1;
             background-color: #000;
             min-height: 0;
+            overflow: hidden;
         }
         
         video {
@@ -297,16 +300,18 @@
             flex-direction: column;
             min-height: 0;
             width: 100%;
+            overflow: hidden;
         }
         
         .multiscreen-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             flex-wrap: wrap;
             gap: 10px;
             flex-shrink: 0;
+            padding: 8px 0;
         }
         
         .multiscreen-controls {
@@ -343,16 +348,16 @@
         .multiscreen-grid {
             flex: 1;
             display: grid;
-            gap: 8px;
+            gap: 6px;
             min-height: 0;
             width: 100%;
             height: 100%;
-            /* Layout dinamico basato sul numero di canali */
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            grid-auto-rows: minmax(150px, 1fr);
+            overflow: hidden;
+            padding: 0;
+            box-sizing: border-box;
+            grid-auto-rows: 1fr;
         }
         
-        /* Layout specifici per 9 e 12 canali */
         .multiscreen-grid.mode-9 {
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
@@ -370,7 +375,9 @@
             overflow: hidden;
             min-height: 0;
             min-width: 0;
-            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
         
         .multiscreen-item:hover {
@@ -392,13 +399,21 @@
         .multiscreen-item.loading::after {
             content: "Caricamento...";
             color: #4CAF50;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
+        }
+        
+        .multiscreen-item .video-wrapper {
+            flex: 1;
+            min-height: 0;
+            background-color: #000;
+            position: relative;
+            overflow: hidden;
         }
         
         .multiscreen-item video {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
         }
         
         .multiscreen-item .channel-name {
@@ -406,9 +421,9 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            padding: 8px;
-            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 6px 8px;
+            font-size: 0.75rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -417,10 +432,10 @@
         
         .multiscreen-item .slot-controls {
             position: absolute;
-            top: 5px;
-            right: 5px;
+            top: 4px;
+            right: 4px;
             display: flex;
-            gap: 5px;
+            gap: 3px;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -433,14 +448,14 @@
             background: rgba(0,0,0,0.8);
             border: none;
             color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
+            width: 22px;
+            height: 22px;
+            border-radius: 3px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             transition: all 0.2s ease;
         }
         
@@ -495,9 +510,10 @@
             height: 100vh;
             background: #000;
             z-index: 10000;
-            padding: 10px;
+            padding: 0;
             display: none;
             flex-direction: column;
+            overflow: hidden;
         }
         
         .fullscreen-mode.active {
@@ -505,22 +521,22 @@
         }
         
         .fullscreen-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            background: rgba(30, 30, 30, 0.9);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            flex-shrink: 0;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10001;
         }
         
         .fullscreen-grid {
             flex: 1;
             display: grid;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            height: calc(100vh - 100px);
+            height: 100vh;
+            overflow: hidden;
+            padding: 0;
+            box-sizing: border-box;
+            grid-auto-rows: 1fr;
         }
         
         .fullscreen-grid.mode-9 {
@@ -536,25 +552,106 @@
         .fullscreen-item {
             position: relative;
             background: #1e1e1e;
-            border-radius: 8px;
             overflow: hidden;
             min-height: 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .fullscreen-item .video-wrapper {
+            flex: 1;
+            min-height: 0;
+            background-color: #000;
+            position: relative;
+            overflow: hidden;
         }
         
         .fullscreen-item video {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
         }
         
-        .fullscreen-controls {
+        .fullscreen-item .channel-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+        
+        .fullscreen-item .slot-controls {
+            position: absolute;
+            top: 6px;
+            right: 6px;
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            justify-content: center;
-            flex-shrink: 0;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         
+        .fullscreen-item:hover .slot-controls {
+            opacity: 1;
+        }
+        
+        .favorites-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .favorites-controls .btn {
+            font-size: 0.8rem;
+            padding: 6px 10px;
+        }
+
+        .add-to-multiscreen-btn {
+            background: none;
+            border: none;
+            color: #4CAF50;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 4px;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+            margin-left: 5px;
+        }
+
+        .add-to-multiscreen-btn:hover {
+            transform: scale(1.2);
+            color: #45a049;
+        }
+
+        .exit-fullscreen-btn {
+            background: rgba(0,0,0,0.8);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .exit-fullscreen-btn:hover {
+            background: rgba(244, 67, 54, 0.8);
+            transform: scale(1.1);
+        }
+
+        /* Media Queries migliorate */
         @media (max-width: 1024px) {
             .player-container {
                 flex-direction: column;
@@ -640,6 +737,10 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
+            
+            .multiscreen-grid {
+                gap: 4px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -665,8 +766,30 @@
             }
             
             .multiscreen-item .slot-controls {
-                opacity: 1; /* Sempre visibili su mobile */
+                opacity: 1;
             }
+            
+            .multiscreen-grid {
+                gap: 2px;
+            }
+            
+            .channel-list-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+        }
+
+        /* Miglioramenti per il layout generale */
+        .multiscreen-container.active {
+            display: flex;
+        }
+        
+        .player-container.active {
+            display: flex;
         }
     </style>
 </head>
@@ -679,7 +802,7 @@
         
         <div class="error-message" id="error-message"></div>
         
-        <div class="player-container" id="player-tab">
+        <div class="player-container active" id="player-tab">
             <div class="video-player">
                 <div class="video-container">
                     <video id="main-video" controls playsinline>
@@ -692,7 +815,6 @@
                         <div class="video-url" id="video-url">Nessun canale selezionato</div>
                         <div class="quality-selector" id="quality-selector" style="display: none;">
                             <span>Qualità:</span>
-                            <!-- I pulsanti di qualità verranno aggiunti dinamicamente -->
                         </div>
                     </div>
                     <div class="control-buttons">
@@ -701,6 +823,7 @@
                         <button class="btn btn-secondary" id="mute-btn">Muto</button>
                         <button class="btn btn-secondary" id="fullscreen-btn">Schermo Intero</button>
                         <button class="btn btn-warning" id="reload-btn">Ricarica Stream</button>
+                        <button class="btn" id="add-current-to-multiscreen">Aggiungi a Multischermo</button>
                     </div>
                 </div>
             </div>
@@ -709,6 +832,10 @@
                 <div class="favorites-list">
                     <div class="favorites-header">
                         <h3>Preferiti</h3>
+                        <div class="favorites-controls">
+                            <button class="btn btn-secondary" id="save-favorites-btn">Salva</button>
+                            <button class="btn btn-secondary" id="load-favorites-btn">Carica</button>
+                        </div>
                     </div>
                     <div class="favorites-content" id="favorites-container">
                         <div class="loading" id="favorites-empty">Nessun canale nei preferiti</div>
@@ -737,11 +864,12 @@
                     </div>
                     <button class="btn" id="start-multiscreen">Avvia Multischermo</button>
                     <button class="btn btn-secondary" id="stop-multiscreen">Ferma Multischermo</button>
+                    <button class="btn" id="cycle-channels-multiscreen">🔄 Cicla Monitor</button>
                     <button class="btn" id="fullscreen-multiscreen">Schermo Intero</button>
                 </div>
             </div>
             <div class="multiscreen-grid mode-9" id="multiscreen-grid">
-                <!-- I video multischermo verranno inseriti qui -->
+                <!-- La griglia verrà popolata dinamicamente -->
             </div>
         </div>
     </div>
@@ -749,15 +877,10 @@
     <!-- Modalità Schermo Intero -->
     <div class="fullscreen-mode" id="fullscreen-mode">
         <div class="fullscreen-header">
-            <h2>Multischermo a Schermo Intero</h2>
-            <button class="btn" id="exit-fullscreen">Esci da Schermo Intero</button>
+            <button class="exit-fullscreen-btn" id="exit-fullscreen" title="Esci da Schermo Intero">×</button>
         </div>
         <div class="fullscreen-grid mode-9" id="fullscreen-grid">
-            <!-- I video a schermo intero verranno inseriti qui -->
-        </div>
-        <div class="fullscreen-controls">
-            <button class="btn" id="refresh-all-fullscreen">Aggiorna Tutti</button>
-            <button class="btn btn-secondary" id="mute-all-fullscreen">Muta Tutti</button>
+            <!-- La griglia verrà popolata dinamicamente -->
         </div>
     </div>
 
@@ -779,6 +902,7 @@
         const startMultiscreenBtn = document.getElementById('start-multiscreen');
         const stopMultiscreenBtn = document.getElementById('stop-multiscreen');
         const fullscreenMultiscreenBtn = document.getElementById('fullscreen-multiscreen');
+        const cycleChannelsMultiscreenBtn = document.getElementById('cycle-channels-multiscreen');
         const tabs = document.querySelectorAll('.tab');
         const tabContents = {
             player: document.getElementById('player-tab'),
@@ -787,13 +911,14 @@
         const errorMessageElement = document.getElementById('error-message');
         const qualitySelector = document.getElementById('quality-selector');
         const modeButtons = document.querySelectorAll('.mode-btn');
+        const saveFavoritesBtn = document.getElementById('save-favorites-btn');
+        const loadFavoritesBtn = document.getElementById('load-favorites-btn');
+        const addCurrentToMultiscreenBtn = document.getElementById('add-current-to-multiscreen');
         
         // Elementi per la modalità schermo intero
         const fullscreenMode = document.getElementById('fullscreen-mode');
         const fullscreenGrid = document.getElementById('fullscreen-grid');
         const exitFullscreenBtn = document.getElementById('exit-fullscreen');
-        const refreshAllFullscreenBtn = document.getElementById('refresh-all-fullscreen');
-        const muteAllFullscreenBtn = document.getElementById('mute-all-fullscreen');
         
         // Variabili di stato
         let channels = [];
@@ -804,7 +929,8 @@
         let hlsInstances = {};
         let currentHls = null;
         let currentMultiscreenMode = '9';
-        const LOAD_TIMEOUT = 10000; // 10 secondi per il timeout
+        const LOAD_TIMEOUT = 10000;
+        let retryCounters = {};
 
         // Inizializzazione
         async function init() {
@@ -841,6 +967,53 @@
         // Salva i preferiti nel localStorage
         function saveFavorites() {
             localStorage.setItem('iptvFavorites', JSON.stringify(favorites));
+        }
+
+        // Salva i preferiti in un file
+        function saveFavoritesToFile() {
+            const dataStr = JSON.stringify(favorites, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'iptv_preferiti.json';
+            link.click();
+            
+            URL.revokeObjectURL(link.href);
+            showError('Lista preferiti salvata con successo!');
+        }
+
+        // Carica i preferiti da un file
+        function loadFavoritesFromFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = event => {
+                    try {
+                        const loadedFavorites = JSON.parse(event.target.result);
+                        if (Array.isArray(loadedFavorites)) {
+                            favorites = loadedFavorites;
+                            saveFavorites();
+                            renderFavorites();
+                            renderChannelList();
+                            showError('Lista preferiti caricata con successo!');
+                        } else {
+                            showError('Formato file non valido');
+                        }
+                    } catch (error) {
+                        showError('Errore nel caricamento del file: ' + error.message);
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
         }
 
         // Aggiungi/rimuovi un canale dai preferiti
@@ -971,13 +1144,18 @@
                             <div class="channel-logo">${channel.name.charAt(0)}</div>
                             <div class="channel-name">${channel.name}</div>
                         </div>
-                        <button class="favorite-btn ${isFavorite(channel) ? 'active' : ''}" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}'>
-                            ${isFavorite(channel) ? '★' : '☆'}
-                        </button>
+                        <div>
+                            <button class="favorite-btn ${isFavorite(channel) ? 'active' : ''}" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}'>
+                                ${isFavorite(channel) ? '★' : '☆'}
+                            </button>
+                            <button class="add-to-multiscreen-btn" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}' title="Aggiungi a Multischermo">
+                                ➕
+                            </button>
+                        </div>
                     `;
                     
                     channelElement.addEventListener('click', (e) => {
-                        if (!e.target.classList.contains('favorite-btn')) {
+                        if (!e.target.classList.contains('favorite-btn') && !e.target.classList.contains('add-to-multiscreen-btn')) {
                             selectChannel(channel);
                         }
                     });
@@ -987,6 +1165,13 @@
                         e.stopPropagation();
                         const channelData = JSON.parse(e.target.getAttribute('data-channel').replace(/&#39;/g, "'"));
                         toggleFavorite(channelData);
+                    });
+
+                    const addToMultiscreenBtn = channelElement.querySelector('.add-to-multiscreen-btn');
+                    addToMultiscreenBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const channelData = JSON.parse(e.target.getAttribute('data-channel').replace(/&#39;/g, "'"));
+                        addChannelToFirstAvailableSlot(channelData);
                     });
                     
                     channelListContainer.appendChild(channelElement);
@@ -1013,13 +1198,18 @@
                         <div class="channel-logo">${channel.name.charAt(0)}</div>
                         <div class="channel-name">${channel.name}</div>
                     </div>
-                    <button class="favorite-btn active" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}'>
-                        ★
-                    </button>
+                    <div>
+                        <button class="favorite-btn active" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}'>
+                            ★
+                        </button>
+                        <button class="add-to-multiscreen-btn" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}' title="Aggiungi a Multischermo">
+                            ➕
+                        </button>
+                    </div>
                 `;
                 
                 favoriteElement.addEventListener('click', (e) => {
-                    if (!e.target.classList.contains('favorite-btn')) {
+                    if (!e.target.classList.contains('favorite-btn') && !e.target.classList.contains('add-to-multiscreen-btn')) {
                         selectChannel(channel);
                     }
                 });
@@ -1029,6 +1219,13 @@
                     e.stopPropagation();
                     const channelData = JSON.parse(e.target.getAttribute('data-channel').replace(/&#39;/g, "'"));
                     toggleFavorite(channelData);
+                });
+
+                const addToMultiscreenBtn = favoriteElement.querySelector('.add-to-multiscreen-btn');
+                addToMultiscreenBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const channelData = JSON.parse(e.target.getAttribute('data-channel').replace(/&#39;/g, "'"));
+                    addChannelToFirstAvailableSlot(channelData);
                 });
                 
                 favoritesContainer.appendChild(favoriteElement);
@@ -1153,7 +1350,7 @@
             
             muteBtn.addEventListener('click', () => {
                 mainVideo.muted = !mainVideo.muted;
-                muteBtn.textContent = mainVideo.muted ? 'Audio' : 'Muto';
+                muteBtn.textContent = mainVideo.muted ? '🔇 Audio' : '🔊 Muto';
             });
             
             fullscreenBtn.addEventListener('click', () => {
@@ -1162,7 +1359,7 @@
                 } else if (mainVideo.mozRequestFullScreen) {
                     mainVideo.mozRequestFullScreen();
                 } else if (mainVideo.webkitRequestFullscreen) {
-                    mainVideo.webkitRequestFullscreen();
+                    mainVideo.webkitRequestfullscreen();
                 } else if (mainVideo.msRequestFullscreen) {
                     mainVideo.msRequestFullscreen();
                 }
@@ -1201,8 +1398,7 @@
             stopMultiscreenBtn.addEventListener('click', stopMultiscreen);
             fullscreenMultiscreenBtn.addEventListener('click', startFullscreenMode);
             exitFullscreenBtn.addEventListener('click', exitFullscreenMode);
-            refreshAllFullscreenBtn.addEventListener('click', refreshAllFullscreen);
-            muteAllFullscreenBtn.addEventListener('click', toggleMuteAllFullscreen);
+            cycleChannelsMultiscreenBtn.addEventListener('click', cycleAllChannelsMultiscreen);
             
             modeButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1210,6 +1406,31 @@
                     setMultiscreenMode(mode);
                 });
             });
+
+            saveFavoritesBtn.addEventListener('click', saveFavoritesToFile);
+            loadFavoritesBtn.addEventListener('click', loadFavoritesFromFile);
+            addCurrentToMultiscreenBtn.addEventListener('click', addCurrentChannelToMultiscreen);
+        }
+
+        // Aggiunge il canale corrente al multischermo
+        function addCurrentChannelToMultiscreen() {
+            if (currentChannel) {
+                addChannelToFirstAvailableSlot(currentChannel);
+            } else {
+                showError('Nessun canale selezionato nel player principale');
+            }
+        }
+
+        // Aggiunge un canale al primo slot disponibile
+        function addChannelToFirstAvailableSlot(channel) {
+            const availableSlot = multiscreenVideos.findIndex(slot => !slot.channel);
+            if (availableSlot !== -1) {
+                assignChannelToSlot(availableSlot, channel);
+                showError(`Canale ${channel.name} aggiunto allo slot ${availableSlot + 1}`);
+            } else {
+                assignChannelToSlot(0, channel);
+                showError(`Canale ${channel.name} aggiunto allo slot 1 (sostituito)`);
+            }
         }
 
         // Imposta la modalità multischermo
@@ -1239,10 +1460,15 @@
         // Attiva una scheda specifica
         function activateTab(tabName) {
             tabs.forEach(tab => tab.classList.remove('active'));
-            Object.values(tabContents).forEach(content => content.style.display = 'none');
+            Object.values(tabContents).forEach(content => {
+                content.style.display = 'none';
+                content.classList.remove('active');
+            });
             
             document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
-            tabContents[tabName].style.display = tabName === 'player' ? 'flex' : 'block';
+            const activeContent = tabContents[tabName];
+            activeContent.style.display = tabName === 'player' ? 'flex' : 'block';
+            activeContent.classList.add('active');
             
             if (tabName === 'multiscreen') {
                 setupMultiscreenGrid();
@@ -1253,12 +1479,16 @@
         function setupMultiscreenGrid() {
             multiscreenGrid.innerHTML = '';
             multiscreenVideos = [];
+            retryCounters = {};
             
             const slotCount = currentMultiscreenMode === '12' ? 12 : 9;
             
             for (let i = 0; i < slotCount; i++) {
                 const multiscreenItem = document.createElement('div');
                 multiscreenItem.className = 'multiscreen-item loading';
+                
+                const videoWrapper = document.createElement('div');
+                videoWrapper.className = 'video-wrapper';
                 
                 const video = document.createElement('video');
                 video.muted = true;
@@ -1271,16 +1501,37 @@
                 const slotControls = document.createElement('div');
                 slotControls.className = 'slot-controls';
                 slotControls.innerHTML = `
+                    <button class="slot-btn mute-btn" title="Audio/Muto">🔊</button>
+                    <button class="slot-btn favorite-btn" title="Aggiungi ai Preferiti">☆</button>
                     <button class="slot-btn change-btn" title="Cambia canale">↻</button>
                     <button class="slot-btn close-btn" title="Chiudi canale">×</button>
                 `;
                 
-                multiscreenItem.appendChild(video);
+                videoWrapper.appendChild(video);
+                multiscreenItem.appendChild(videoWrapper);
                 multiscreenItem.appendChild(channelName);
                 multiscreenItem.appendChild(slotControls);
                 
+                const muteBtn = multiscreenItem.querySelector('.mute-btn');
+                const favoriteBtn = multiscreenItem.querySelector('.favorite-btn');
                 const changeBtn = multiscreenItem.querySelector('.change-btn');
                 const closeBtn = multiscreenItem.querySelector('.close-btn');
+                
+                muteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (multiscreenVideos[i].video) {
+                        multiscreenVideos[i].video.muted = !multiscreenVideos[i].video.muted;
+                        muteBtn.textContent = multiscreenVideos[i].video.muted ? '🔇' : '🔊';
+                    }
+                });
+                
+                favoriteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (multiscreenVideos[i].channel) {
+                        toggleFavorite(multiscreenVideos[i].channel);
+                        favoriteBtn.textContent = isFavorite(multiscreenVideos[i].channel) ? '★' : '☆';
+                    }
+                });
                 
                 changeBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1303,9 +1554,23 @@
                     channel: null,
                     hls: null,
                     timeoutId: null,
-                    element: multiscreenItem
+                    element: multiscreenItem,
+                    favoriteBtn: favoriteBtn,
+                    muteBtn: muteBtn
                 });
+                retryCounters[i] = 0;
             }
+        }
+
+        // Cicla tutti i canali nella modalità multischermo
+        function cycleAllChannelsMultiscreen() {
+            multiscreenVideos.forEach((slot, index) => {
+                if (slot.channel) {
+                    const newChannel = channels[Math.floor(Math.random() * channels.length)];
+                    assignChannelToSlot(index, newChannel);
+                }
+            });
+            showError('Tutti i canali sono stati riciclati');
         }
 
         // Mostra il selettore di canali per uno slot specifico
@@ -1328,10 +1593,15 @@
             slot.element.classList.add('loading');
             slot.element.classList.remove('error');
             
+            slot.favoriteBtn.textContent = isFavorite(channel) ? '★' : '☆';
+            slot.muteBtn.textContent = '🔊';
+            
             if (Hls.isSupported()) {
                 slot.hls = new Hls({
                     enableWorker: false,
-                    lowLatencyMode: true
+                    lowLatencyMode: true,
+                    maxMaxBufferLength: 30,
+                    maxBufferSize: 10 * 1000 * 1000
                 });
                 
                 slot.hls.loadSource(channel.url);
@@ -1339,6 +1609,7 @@
                 
                 slot.hls.on(Hls.Events.MANIFEST_PARSED, function() {
                     slot.element.classList.remove('loading');
+                    retryCounters[slotIndex] = 0;
                     slot.video.play().catch(e => {
                         console.error(`Errore nella riproduzione del canale multischermo ${slotIndex}:`, e);
                     });
@@ -1346,8 +1617,21 @@
                 
                 slot.hls.on(Hls.Events.ERROR, function(event, data) {
                     console.error(`HLS Error su slot ${slotIndex}:`, data);
+                    
                     if (data.fatal) {
-                        slot.element.classList.add('error');
+                        retryCounters[slotIndex]++;
+                        
+                        if (retryCounters[slotIndex] < 5) {
+                            console.log(`Tentativo ${retryCounters[slotIndex]} per slot ${slotIndex}, cambio canale...`);
+                            const newChannel = channels[Math.floor(Math.random() * channels.length)];
+                            setTimeout(() => {
+                                assignChannelToSlot(slotIndex, newChannel);
+                            }, 1000);
+                        } else {
+                            slot.element.classList.add('error');
+                            console.error(`Troppi tentativi falliti per slot ${slotIndex}`);
+                        }
+                        
                         switch(data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
                                 slot.hls.startLoad();
@@ -1361,6 +1645,7 @@
             } else if (slot.video.canPlayType('application/vnd.apple.mpegurl')) {
                 slot.video.src = channel.url;
                 slot.element.classList.remove('loading');
+                retryCounters[slotIndex] = 0;
                 slot.video.play().catch(e => {
                     console.error(`Errore nella riproduzione del canale multischermo ${slotIndex}:`, e);
                 });
@@ -1389,6 +1674,9 @@
             slot.channel = null;
             slot.channelName.textContent = 'Slot ' + (slotIndex + 1);
             slot.element.className = 'multiscreen-item';
+            slot.favoriteBtn.textContent = '☆';
+            slot.muteBtn.textContent = '🔊';
+            retryCounters[slotIndex] = 0;
         }
 
         // Avvia la modalità multischermo
@@ -1437,6 +1725,9 @@
                 const fullscreenItem = document.createElement('div');
                 fullscreenItem.className = 'fullscreen-item loading';
                 
+                const videoWrapper = document.createElement('div');
+                videoWrapper.className = 'video-wrapper';
+                
                 const video = document.createElement('video');
                 video.muted = true;
                 video.playsinline = true;
@@ -1445,8 +1736,61 @@
                 channelName.className = 'channel-name';
                 channelName.textContent = 'Slot ' + (i + 1);
                 
-                fullscreenItem.appendChild(video);
+                const slotControls = document.createElement('div');
+                slotControls.className = 'slot-controls';
+                slotControls.innerHTML = `
+                    <button class="slot-btn mute-btn" title="Audio/Muto">🔊</button>
+                    <button class="slot-btn favorite-btn" title="Aggiungi ai Preferiti">☆</button>
+                    <button class="slot-btn change-btn" title="Cambia canale">↻</button>
+                    <button class="slot-btn close-btn" title="Chiudi canale">×</button>
+                `;
+                
+                videoWrapper.appendChild(video);
+                fullscreenItem.appendChild(videoWrapper);
                 fullscreenItem.appendChild(channelName);
+                fullscreenItem.appendChild(slotControls);
+                
+                const muteBtn = fullscreenItem.querySelector('.mute-btn');
+                const favoriteBtn = fullscreenItem.querySelector('.favorite-btn');
+                const changeBtn = fullscreenItem.querySelector('.change-btn');
+                const closeBtn = fullscreenItem.querySelector('.close-btn');
+                
+                muteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (fullscreenVideos[i].video) {
+                        fullscreenVideos[i].video.muted = !fullscreenVideos[i].video.muted;
+                        muteBtn.textContent = fullscreenVideos[i].video.muted ? '🔇' : '🔊';
+                    }
+                });
+                
+                favoriteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (fullscreenVideos[i].channel) {
+                        toggleFavorite(fullscreenVideos[i].channel);
+                        favoriteBtn.textContent = isFavorite(fullscreenVideos[i].channel) ? '★' : '☆';
+                    }
+                });
+                
+                changeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const newChannel = channels[Math.floor(Math.random() * channels.length)];
+                    assignChannelToFullscreenSlot(i, newChannel);
+                });
+                
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (fullscreenVideos[i].hls) {
+                        fullscreenVideos[i].hls.destroy();
+                        clearTimeout(fullscreenVideos[i].timeoutId);
+                        fullscreenVideos[i].hls = null;
+                    }
+                    fullscreenVideos[i].video.src = '';
+                    fullscreenVideos[i].channel = null;
+                    fullscreenVideos[i].channelName.textContent = 'Slot ' + (i + 1);
+                    fullscreenVideos[i].element.className = 'fullscreen-item';
+                    favoriteBtn.textContent = '☆';
+                    muteBtn.textContent = '🔊';
+                });
                 
                 fullscreenGrid.appendChild(fullscreenItem);
                 fullscreenVideos.push({ 
@@ -1455,7 +1799,9 @@
                     channel: null,
                     hls: null,
                     timeoutId: null,
-                    element: fullscreenItem
+                    element: fullscreenItem,
+                    favoriteBtn: favoriteBtn,
+                    muteBtn: muteBtn
                 });
             }
         }
@@ -1473,6 +1819,9 @@
             slot.channelName.textContent = channel.name;
             slot.element.classList.add('loading');
             slot.element.classList.remove('error');
+            
+            slot.favoriteBtn.textContent = isFavorite(channel) ? '★' : '☆';
+            slot.muteBtn.textContent = '🔊';
             
             if (Hls.isSupported()) {
                 slot.hls = new Hls({
@@ -1527,29 +1876,10 @@
             });
         }
 
-        // Aggiorna tutti i canali nella modalità schermo intero
-        function refreshAllFullscreen() {
-            fullscreenVideos.forEach((slot, index) => {
-                if (slot.channel) {
-                    assignChannelToFullscreenSlot(index, slot.channel);
-                }
-            });
-        }
-
-        // Attiva/disattiva il muto per tutti i canali nella modalità schermo intero
-        function toggleMuteAllFullscreen() {
-            const isMuted = fullscreenVideos[0].video.muted;
-            fullscreenVideos.forEach(slot => {
-                slot.video.muted = !isMuted;
-            });
-            muteAllFullscreenBtn.textContent = isMuted ? 'Muta Tutti' : 'Attiva Audio';
-        }
-
         // Inizializza l'applicazione
         init();
     </script>
     
-    <!-- Includi HLS.js per un migliore supporto degli stream M3U8 -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </body>
 </html>
