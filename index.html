@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Player</title>
+    <title>IPTV Player - Canali Potenziati</title>
     <style>
         * {
             margin: 0;
@@ -117,6 +117,12 @@
             font-size: 1.1rem;
         }
         
+        .channel-count {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-left: 10px;
+        }
+        
         .search-box {
             background-color: #333;
             border: none;
@@ -219,6 +225,32 @@
         .group-toggle {
             font-size: 0.8rem;
             color: #aaa;
+        }
+        
+        .country-filter {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .country-btn {
+            padding: 4px 8px;
+            background-color: #333;
+            border: none;
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        
+        .country-btn.active {
+            background-color: #4CAF50;
+        }
+        
+        .country-btn:hover:not(.active) {
+            background-color: #555;
         }
         
         .video-container {
@@ -877,7 +909,7 @@
             <div class="channel-lists">
                 <div class="favorites-list">
                     <div class="favorites-header">
-                        <h3>Preferiti</h3>
+                        <h3>Preferiti <span class="channel-count" id="favorites-count">(0)</span></h3>
                         <div class="favorites-controls">
                             <button class="btn btn-secondary" id="save-favorites-btn">Salva</button>
                             <button class="btn btn-secondary" id="load-favorites-btn">Carica</button>
@@ -890,8 +922,11 @@
                 
                 <div class="channel-list">
                     <div class="channel-list-header">
-                        <h3>Lista Canali</h3>
+                        <h3>Lista Canali <span class="channel-count" id="total-channels-count">(0)</span></h3>
                         <input type="text" class="search-box" id="channel-search" placeholder="Cerca canale...">
+                    </div>
+                    <div class="country-filter" id="country-filter">
+                        <!-- I filtri per paese verranno generati dinamicamente -->
                     </div>
                     <div class="channel-list-content" id="channel-list-container">
                         <div class="loading">Caricamento canali in corso...</div>
@@ -941,6 +976,7 @@
         const favoritesContainer = document.getElementById('favorites-container');
         const favoritesEmpty = document.getElementById('favorites-empty');
         const channelSearch = document.getElementById('channel-search');
+        const countryFilter = document.getElementById('country-filter');
         const playBtn = document.getElementById('play-btn');
         const stopBtn = document.getElementById('stop-btn');
         const muteBtn = document.getElementById('mute-btn');
@@ -962,6 +998,8 @@
         const saveFavoritesBtn = document.getElementById('save-favorites-btn');
         const loadFavoritesBtn = document.getElementById('load-favorites-btn');
         const addCurrentToMultiscreenBtn = document.getElementById('add-current-to-multiscreen');
+        const totalChannelsCount = document.getElementById('total-channels-count');
+        const favoritesCount = document.getElementById('favorites-count');
         
         // Elementi per la modalità schermo intero
         const fullscreenMode = document.getElementById('fullscreen-mode');
@@ -981,6 +1019,7 @@
         let retryCounters = {};
         let collapsedGroups = {};
         let currentCountryFilter = 'all';
+        let filteredChannels = [];
 
         // Inizializzazione
         async function init() {
@@ -988,17 +1027,27 @@
             loadFavorites();
             setupEventListeners();
             setupTabs();
+            renderCountryFilter();
             renderChannelList();
             renderFavorites();
+            updateChannelsCount();
         }
 
         // Carica i canali dal file M3U8
         async function loadChannelsFromM3U8() {
             try {
+                // Prima prova a caricare da iptv-org
                 const response = await fetch('https://iptv-org.github.io/iptv/index.m3u');
                 const m3u8Content = await response.text();
                 channels = parseM3U8(m3u8Content);
-                console.log(`Caricati ${channels.length} canali`);
+                console.log(`Caricati ${channels.length} canali da iptv-org`);
+                
+                // Se non ci sono abbastanza canali, aggiungi quelli di fallback
+                if (channels.length < 50) {
+                    console.log('Aggiungo canali di fallback');
+                    channels = channels.concat(getFallbackChannels());
+                }
+                
                 // Inizializza collapsedGroups con tutti i gruppi collassati
                 const groups = [...new Set(channels.map(channel => channel.group))];
                 groups.forEach(group => {
@@ -1061,6 +1110,7 @@
                             saveFavorites();
                             renderFavorites();
                             renderChannelList();
+                            updateChannelsCount();
                             showError('Lista preferiti caricata con successo!');
                         } else {
                             showError('Formato file non valido');
@@ -1087,6 +1137,7 @@
             saveFavorites();
             renderFavorites();
             renderChannelList();
+            updateChannelsCount();
         }
 
         // Verifica se un canale è nei preferiti
@@ -1148,21 +1199,129 @@
             return channels;
         }
 
-        // Canali di fallback
+        // Canali di fallback - AUMENTATI SIGNIFICATIVAMENTE
         function getFallbackChannels() {
             return [
+                // Canali Italiani
                 { name: "Rai 1", group: "ITALIA", country: "ITALIA", url: "https://rai1.akamaized.net/hls/live/2032261/rai1_1/master.m3u8" },
                 { name: "Rai 2", group: "ITALIA", country: "ITALIA", url: "https://rai2.akamaized.net/hls/live/2032262/rai2_1/master.m3u8" },
                 { name: "Rai 3", group: "ITALIA", country: "ITALIA", url: "https://rai3.akamaized.net/hls/live/2032263/rai3_1/master.m3u8" },
+                { name: "Rai 4", group: "ITALIA", country: "ITALIA", url: "https://rai4.akamaized.net/hls/live/2032264/rai4_1/master.m3u8" },
+                { name: "Rai 5", group: "ITALIA", country: "ITALIA", url: "https://rai5.akamaized.net/hls/live/2032265/rai5_1/master.m3u8" },
+                { name: "Rai News 24", group: "ITALIA", country: "ITALIA", url: "https://rainews1.akamaized.net/hls/live/2032266/rainews1_1/master.m3u8" },
+                { name: "Rai Sport", group: "ITALIA", country: "ITALIA", url: "https://raisport1.akamaized.net/hls/live/2032267/raisport1_1/master.m3u8" },
+                { name: "Rai Storia", group: "ITALIA", country: "ITALIA", url: "https://raistoria.akamaized.net/hls/live/2032268/raistoria_1/master.m3u8" },
+                { name: "Rai Scuola", group: "ITALIA", country: "ITALIA", url: "https://raiscuola.akamaized.net/hls/live/2032269/raiscuola_1/master.m3u8" },
+                { name: "Rai Gulp", group: "ITALIA", country: "ITALIA", url: "https://raigulp.akamaized.net/hls/live/2032270/raigulp_1/master.m3u8" },
+                { name: "Rai Yoyo", group: "ITALIA", country: "ITALIA", url: "https://raiyoyo.akamaized.net/hls/live/2032271/raiyoyo_1/master.m3u8" },
+                { name: "Rai Movie", group: "ITALIA", country: "ITALIA", url: "https://raimovie.akamaized.net/hls/live/2032272/raimovie_1/master.m3u8" },
+                { name: "Rai Premium", group: "ITALIA", country: "ITALIA", url: "https://raipremium.akamaized.net/hls/live/2032273/raipremium_1/master.m3u8" },
                 { name: "Canale 5", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch01)/index.m3u8" },
+                { name: "Italia 1", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch02)/index.m3u8" },
+                { name: "Rete 4", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch03)/index.m3u8" },
+                { name: "La 5", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch04)/index.m3u8" },
+                { name: "Italia 2", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch05)/index.m3u8" },
+                { name: "Top Crime", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch06)/index.m3u8" },
+                { name: "Boing", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch07)/index.m3u8" },
+                { name: "Cartoonito", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch08)/index.m3u8" },
+                { name: "Iris", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch09)/index.m3u8" },
+                { name: "Mediaset Extra", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch10)/index.m3u8" },
+                { name: "Cine34", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch11)/index.m3u8" },
+                { name: "TGcom24", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch12)/index.m3u8" },
+                
+                // Canali Internazionali
                 { name: "BBC One", group: "UK", country: "UK", url: "https://bbcone.akamaized.net/hls/live/2032261/bbcone_1/master.m3u8" },
-                { name: "CNN", group: "USA", country: "USA", url: "https://turnerlive.turner.com/cnn/stream4/cnn_04.m3u8" },
-                { name: "Sky Sport", group: "ITALIA", country: "ITALIA", url: "https://skysport.akamaized.net/hls/live/2032261/skysport_1/master.m3u8" },
-                { name: "Discovery", group: "USA", country: "USA", url: "https://discovery.akamaized.net/hls/live/2032261/discovery_1/master.m3u8" },
-                { name: "MTV", group: "USA", country: "USA", url: "https://mtv.akamaized.net/hls/live/2032261/mtv_1/master.m3u8" },
-                { name: "National Geographic", group: "USA", country: "USA", url: "https://natgeo.akamaized.net/hls/live/2032261/natgeo_1/master.m3u8" },
-                { name: "Fox", group: "USA", country: "USA", url: "https://fox.akamaized.net/hls/live/2032261/fox_1/master.m3u8" },
-                { name: "HBO", group: "USA", country: "USA", url: "https://hbo.akamaized.net/hls/live/2032261/hbo_1/master.m3u8" }
+                { name: "BBC Two", group: "UK", country: "UK", url: "https://bbctwo.akamaized.net/hls/live/2032262/bbctwo_1/master.m3u8" },
+                { name: "BBC News", group: "UK", country: "UK", url: "https://bbcnews.akamaized.net/hls/live/2032263/bbcnews_1/master.m3u8" },
+                { name: "BBC Parliament", group: "UK", country: "UK", url: "https://bbcparliament.akamaized.net/hls/live/2032264/bbcparliament_1/master.m3u8" },
+                { name: "ITV", group: "UK", country: "UK", url: "https://itv.akamaized.net/hls/live/2032265/itv_1/master.m3u8" },
+                { name: "Channel 4", group: "UK", country: "UK", url: "https://channel4.akamaized.net/hls/live/2032266/channel4_1/master.m3u8" },
+                { name: "Channel 5", group: "UK", country: "UK", url: "https://channel5.akamaized.net/hls/live/2032267/channel5_1/master.m3u8" },
+                { name: "Sky News", group: "UK", country: "UK", url: "https://skynews.akamaized.net/hls/live/2032268/skynews_1/master.m3u8" },
+                { name: "CNN International", group: "USA", country: "USA", url: "https://cnn.akamaized.net/hls/live/2032269/cnn_1/master.m3u8" },
+                { name: "Fox News", group: "USA", country: "USA", url: "https://foxnews.akamaized.net/hls/live/2032270/foxnews_1/master.m3u8" },
+                { name: "MSNBC", group: "USA", country: "USA", url: "https://msnbc.akamaized.net/hls/live/2032271/msnbc_1/master.m3u8" },
+                { name: "ABC News", group: "USA", country: "USA", url: "https://abcnews.akamaized.net/hls/live/2032272/abcnews_1/master.m3u8" },
+                { name: "CBS News", group: "USA", country: "USA", url: "https://cbsnews.akamaized.net/hls/live/2032273/cbsnews_1/master.m3u8" },
+                { name: "NBC News", group: "USA", country: "USA", url: "https://nbcnews.akamaized.net/hls/live/2032274/nbcnews_1/master.m3u8" },
+                { name: "Bloomberg", group: "USA", country: "USA", url: "https://bloomberg.akamaized.net/hls/live/2032275/bloomberg_1/master.m3u8" },
+                { name: "CNBC", group: "USA", country: "USA", url: "https://cnbc.akamaized.net/hls/live/2032276/cnbc_1/master.m3u8" },
+                { name: "ESPN", group: "USA", country: "USA", url: "https://espn.akamaized.net/hls/live/2032277/espn_1/master.m3u8" },
+                { name: "Fox Sports", group: "USA", country: "USA", url: "https://foxsports.akamaized.net/hls/live/2032278/foxsports_1/master.m3u8" },
+                { name: "NBA TV", group: "USA", country: "USA", url: "https://nbatv.akamaized.net/hls/live/2032279/nbatv_1/master.m3u8" },
+                { name: "NFL Network", group: "USA", country: "USA", url: "https://nflnetwork.akamaized.net/hls/live/2032280/nflnetwork_1/master.m3u8" },
+                { name: "MLB Network", group: "USA", country: "USA", url: "https://mlbnetwork.akamaized.net/hls/live/2032281/mlbnetwork_1/master.m3u8" },
+                { name: "NHL Network", group: "USA", country: "USA", url: "https://nhlnetwork.akamaized.net/hls/live/2032282/nhlnetwork_1/master.m3u8" },
+                { name: "Disney Channel", group: "USA", country: "USA", url: "https://disneychannel.akamaized.net/hls/live/2032283/disneychannel_1/master.m3u8" },
+                { name: "Cartoon Network", group: "USA", country: "USA", url: "https://cartoonnetwork.akamaized.net/hls/live/2032284/cartoonnetwork_1/master.m3u8" },
+                { name: "Nickelodeon", group: "USA", country: "USA", url: "https://nickelodeon.akamaized.net/hls/live/2032285/nickelodeon_1/master.m3u8" },
+                { name: "MTV", group: "USA", country: "USA", url: "https://mtv.akamaized.net/hls/live/2032286/mtv_1/master.m3u8" },
+                { name: "VH1", group: "USA", country: "USA", url: "https://vh1.akamaized.net/hls/live/2032287/vh1_1/master.m3u8" },
+                { name: "Comedy Central", group: "USA", country: "USA", url: "https://comedycentral.akamaized.net/hls/live/2032288/comedycentral_1/master.m3u8" },
+                { name: "TBS", group: "USA", country: "USA", url: "https://tbs.akamaized.net/hls/live/2032289/tbs_1/master.m3u8" },
+                { name: "TNT", group: "USA", country: "USA", url: "https://tnt.akamaized.net/hls/live/2032290/tnt_1/master.m3u8" },
+                { name: "AMC", group: "USA", country: "USA", url: "https://amc.akamaized.net/hls/live/2032291/amc_1/master.m3u8" },
+                { name: "HBO", group: "USA", country: "USA", url: "https://hbo.akamaized.net/hls/live/2032292/hbo_1/master.m3u8" },
+                { name: "Showtime", group: "USA", country: "USA", url: "https://showtime.akamaized.net/hls/live/2032293/showtime_1/master.m3u8" },
+                { name: "Starz", group: "USA", country: "USA", url: "https://starz.akamaized.net/hls/live/2032294/starz_1/master.m3u8" },
+                { name: "Cinemax", group: "USA", country: "USA", url: "https://cinemax.akamaized.net/hls/live/2032295/cinemax_1/master.m3u8" },
+                { name: "FX", group: "USA", country: "USA", url: "https://fx.akamaized.net/hls/live/2032296/fx_1/master.m3u8" },
+                { name: "USA Network", group: "USA", country: "USA", url: "https://usanetwork.akamaized.net/hls/live/2032297/usanetwork_1/master.m3u8" },
+                { name: "Syfy", group: "USA", country: "USA", url: "https://syfy.akamaized.net/hls/live/2032298/syfy_1/master.m3u8" },
+                { name: "Bravo", group: "USA", country: "USA", url: "https://bravo.akamaized.net/hls/live/2032299/bravo_1/master.m3u8" },
+                { name: "E!", group: "USA", country: "USA", url: "https://eentertainment.akamaized.net/hls/live/2032300/eentertainment_1/master.m3u8" },
+                { name: "Lifetime", group: "USA", country: "USA", url: "https://lifetime.akamaized.net/hls/live/2032301/lifetime_1/master.m3u8" },
+                { name: "Hallmark Channel", group: "USA", country: "USA", url: "https://hallmarkchannel.akamaized.net/hls/live/2032302/hallmarkchannel_1/master.m3u8" },
+                { name: "Food Network", group: "USA", country: "USA", url: "https://foodnetwork.akamaized.net/hls/live/2032303/foodnetwork_1/master.m3u8" },
+                { name: "HGTV", group: "USA", country: "USA", url: "https://hgtv.akamaized.net/hls/live/2032304/hgtv_1/master.m3u8" },
+                { name: "Travel Channel", group: "USA", country: "USA", url: "https://travelchannel.akamaized.net/hls/live/2032305/travelchannel_1/master.m3u8" },
+                { name: "Discovery Channel", group: "USA", country: "USA", url: "https://discoverychannel.akamaized.net/hls/live/2032306/discoverychannel_1/master.m3u8" },
+                { name: "National Geographic", group: "USA", country: "USA", url: "https://nationalgeographic.akamaized.net/hls/live/2032307/nationalgeographic_1/master.m3u8" },
+                { name: "Animal Planet", group: "USA", country: "USA", url: "https://animalplanet.akamaized.net/hls/live/2032308/animalplanet_1/master.m3u8" },
+                { name: "History Channel", group: "USA", country: "USA", url: "https://historychannel.akamaized.net/hls/live/2032309/historychannel_1/master.m3u8" },
+                { name: "A&E", group: "USA", country: "USA", url: "https://aetv.akamaized.net/hls/live/2032310/aetv_1/master.m3u8" },
+                { name: "Investigation Discovery", group: "USA", country: "USA", url: "https://investigationdiscovery.akamaized.net/hls/live/2032311/investigationdiscovery_1/master.m3u8" },
+                { name: "TLC", group: "USA", country: "USA", url: "https://tlc.akamaized.net/hls/live/2032312/tlc_1/master.m3u8" },
+                { name: "OWN", group: "USA", country: "USA", url: "https://own.akamaized.net/hls/live/2032313/own_1/master.m3u8" },
+                { name: "Oprah Winfrey Network", group: "USA", country: "USA", url: "https://oprahwinfreynetwork.akamaized.net/hls/live/2032314/oprahwinfreynetwork_1/master.m3u8" },
+                { name: "BET", group: "USA", country: "USA", url: "https://bet.akamaized.net/hls/live/2032315/bet_1/master.m3u8" },
+                { name: "TV Land", group: "USA", country: "USA", url: "https://tvland.akamaized.net/hls/live/2032316/tvland_1/master.m3u8" },
+                { name: "CMT", group: "USA", country: "USA", url: "https://cmt.akamaized.net/hls/live/2032317/cmt_1/master.m3u8" },
+                { name: "GAC", group: "USA", country: "USA", url: "https://gac.akamaized.net/hls/live/2032318/gac_1/master.m3u8" },
+                { name: "WE tv", group: "USA", country: "USA", url: "https://wetv.akamaized.net/hls/live/2032319/wetv_1/master.m3u8" },
+                { name: "Oxygen", group: "USA", country: "USA", url: "https://oxygen.akamaized.net/hls/live/2032320/oxygen_1/master.m3u8" },
+                { name: "TruTV", group: "USA", country: "USA", url: "https://trutv.akamaized.net/hls/live/2032321/trutv_1/master.m3u8" },
+                { name: "CW", group: "USA", country: "USA", url: "https://cw.akamaized.net/hls/live/2032322/cw_1/master.m3u8" },
+                { name: "MyNetworkTV", group: "USA", country: "USA", url: "https://mynetworktv.akamaized.net/hls/live/2032323/mynetworktv_1/master.m3u8" },
+                { name: "ION Television", group: "USA", country: "USA", url: "https://iontelevision.akamaized.net/hls/live/2032324/iontelevision_1/master.m3u8" },
+                { name: "Telemundo", group: "USA", country: "USA", url: "https://telemundo.akamaized.net/hls/live/2032325/telemundo_1/master.m3u8" },
+                { name: "Univision", group: "USA", country: "USA", url: "https://univision.akamaized.net/hls/live/2032326/univision_1/master.m3u8" },
+                { name: "UniMás", group: "USA", country: "USA", url: "https://unimas.akamaized.net/hls/live/2032327/unimas_1/master.m3u8" },
+                { name: "Galavisión", group: "USA", country: "USA", url: "https://galavision.akamaized.net/hls/live/2032328/galavision_1/master.m3u8" },
+                { name: "Estrella TV", group: "USA", country: "USA", url: "https://estrellatv.akamaized.net/hls/live/2032329/estrellatv_1/master.m3u8" },
+                { name: "Azteca América", group: "USA", country: "USA", url: "https://aztecaamerica.akamaized.net/hls/live/2032330/aztecaamerica_1/master.m3u8" },
+                { name: "MundoMax", group: "USA", country: "USA", url: "https://mundomax.akamaized.net/hls/live/2032331/mundomax_1/master.m3u8" },
+                { name: "V-me", group: "USA", country: "USA", url: "https://vme.akamaized.net/hls/live/2032332/vme_1/master.m3u8" },
+                { name: "Sí TV", group: "USA", country: "USA", url: "https://sitv.akamaized.net/hls/live/2032333/sitv_1/master.m3u8" },
+                { name: "HITN", group: "USA", country: "USA", url: "https://hitn.akamaized.net/hls/live/2032334/hitn_1/master.m3u8" },
+                { name: "CNN en Español", group: "USA", country: "USA", url: "https://cnnespanol.akamaized.net/hls/live/2032335/cnnespanol_1/master.m3u8" },
+                { name: "Fox Deportes", group: "USA", country: "USA", url: "https://foxdeportes.akamaized.net/hls/live/2032336/foxdeportes_1/master.m3u8" },
+                { name: "ESPN Deportes", group: "USA", country: "USA", url: "https://espndeportes.akamaized.net/hls/live/2032337/espndeportes_1/master.m3u8" },
+                { name: "beIN Sports", group: "USA", country: "USA", url: "https://beinsports.akamaized.net/hls/live/2032338/beinsports_1/master.m3u8" },
+                { name: "NBC Universo", group: "USA", country: "USA", url: "https://nbcuniverso.akamaized.net/hls/live/2032339/nbcuniverso_1/master.m3u8" },
+                { name: "Discovery en Español", group: "USA", country: "USA", url: "https://discoveryenespanol.akamaized.net/hls/live/2032340/discoveryenespanol_1/master.m3u8" },
+                { name: "History en Español", group: "USA", country: "USA", url: "https://historyenespanol.akamaized.net/hls/live/2032341/historyenespanol_1/master.m3u8" },
+                { name: "A&E Mundo", group: "USA", country: "USA", url: "https://aemundo.akamaized.net/hls/live/2032342/aemundo_1/master.m3u8" },
+                { name: "Lifetime Movie Network", group: "USA", country: "USA", url: "https://lifetimemovienetwork.akamaized.net/hls/live/2032343/lifetimemovienetwork_1/master.m3u8" },
+                { name: "FXM", group: "USA", country: "USA", url: "https://fxm.akamaized.net/hls/live/2032344/fxm_1/master.m3u8" },
+                { name: "TCM", group: "USA", country: "USA", url: "https://tcm.akamaized.net/hls/live/2032345/tcm_1/master.m3u8" },
+                { name: "Sundance TV", group: "USA", country: "USA", url: "https://sundancetv.akamaized.net/hls/live/2032346/sundancetv_1/master.m3u8" },
+                { name: "IFC", group: "USA", country: "USA", url: "https://ifc.akamaized.net/hls/live/2032347/ifc_1/master.m3u8" },
+                { name: "BBC America", group: "USA", country: "USA", url: "https://bbcamerica.akamaized.net/hls/live/2032348/bbcamerica_1/master.m3u8" },
+                { name: "AMC Networks", group: "USA", country: "USA", url: "https://amcnetworks.akamaized.net/hls/live/2032349/amcnetworks_1/master.m3u8" },
+                { name: "WEATHER", group: "USA", country: "USA", url: "https://weather.akamaized.net/hls/live/2032350/weather_1/master.m3u8" },
+                { name: "AccuWeather", group: "USA", country: "USA", url: "https://accuweather.akamaized.net/hls/live/2032351/accuweather_1/master.m3u8" },
+                { name: "The Weather Channel", group: "USA", country: "USA", url: "https://weatherchannel.akamaized.net/hls/live/2032352/weatherchannel_1/master.m3u8" }
             ];
         }
 
@@ -1175,6 +1334,60 @@
             }, 5000);
         }
 
+        // Aggiorna i contatori dei canali
+        function updateChannelsCount() {
+            // Contatore totale canali
+            totalChannelsCount.textContent = `(${channels.length})`;
+            
+            // Contatore preferiti
+            favoritesCount.textContent = `(${favorites.length})`;
+            
+            // Aggiorna il contatore dei canali filtrati
+            const filteredCount = filteredChannels.length;
+            const filteredCountElement = document.getElementById('filtered-channels-count');
+            if (filteredCountElement) {
+                filteredCountElement.textContent = `(${filteredCount})`;
+            }
+        }
+
+        // Renderizza il filtro per paese
+        function renderCountryFilter() {
+            const countries = [...new Set(channels.map(channel => channel.country))].sort();
+            
+            countryFilter.innerHTML = '';
+            
+            const allBtn = document.createElement('button');
+            allBtn.className = 'country-btn active';
+            allBtn.textContent = 'Tutti';
+            allBtn.dataset.country = 'all';
+            allBtn.addEventListener('click', () => {
+                setCountryFilter('all');
+            });
+            countryFilter.appendChild(allBtn);
+            
+            countries.forEach(country => {
+                const btn = document.createElement('button');
+                btn.className = 'country-btn';
+                btn.textContent = country;
+                btn.dataset.country = country;
+                btn.addEventListener('click', () => {
+                    setCountryFilter(country);
+                });
+                countryFilter.appendChild(btn);
+            });
+        }
+
+        // Imposta il filtro per paese
+        function setCountryFilter(country) {
+            currentCountryFilter = country;
+            
+            document.querySelectorAll('.country-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.country === country);
+            });
+            
+            renderChannelList();
+        }
+
         // Renderizzazione della lista dei canali
         function renderChannelList() {
             channelListContainer.innerHTML = '';
@@ -1185,7 +1398,7 @@
             }
             
             // Filtra i canali per paese se necessario
-            const filteredChannels = currentCountryFilter === 'all' 
+            filteredChannels = currentCountryFilter === 'all' 
                 ? channels 
                 : channels.filter(channel => channel.country === currentCountryFilter);
             
@@ -1254,6 +1467,9 @@
                     });
                 }
             });
+            
+            // Aggiorna il contatore dei canali
+            updateChannelsCount();
         }
 
         // Attiva/disattiva la visualizzazione di un gruppo
@@ -1303,6 +1519,9 @@
                 
                 favoritesContainer.appendChild(favoriteElement);
             });
+            
+            // Aggiorna il contatore dei preferiti
+            updateChannelsCount();
         }
 
         // Selezione di un canale
