@@ -19,13 +19,16 @@
             line-height: 1.6;
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         .container {
-            height: 100%;
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            min-height: 0;
         }
         
         .tabs {
@@ -207,6 +210,15 @@
             top: 0;
             z-index: 10;
             font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .group-toggle {
+            font-size: 0.8rem;
+            color: #aaa;
         }
         
         .video-container {
@@ -216,12 +228,17 @@
             background-color: #000;
             min-height: 0;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
             width: 100%;
             height: 100%;
-            object-fit: contain;
         }
         
         .video-controls {
@@ -358,6 +375,11 @@
             grid-auto-rows: 1fr;
         }
         
+        .multiscreen-grid.mode-4 {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+        }
+        
         .multiscreen-grid.mode-9 {
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
@@ -366,6 +388,11 @@
         .multiscreen-grid.mode-12 {
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(3, 1fr);
+        }
+        
+        .multiscreen-grid.mode-16 {
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
         }
         
         .multiscreen-item {
@@ -408,12 +435,17 @@
             background-color: #000;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .multiscreen-item video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
             width: 100%;
             height: 100%;
-            object-fit: contain;
         }
         
         .multiscreen-item .channel-name {
@@ -421,7 +453,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: transparent;
             padding: 6px 8px;
             font-size: 0.75rem;
             white-space: nowrap;
@@ -539,6 +571,11 @@
             grid-auto-rows: 1fr;
         }
         
+        .fullscreen-grid.mode-4 {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+        }
+        
         .fullscreen-grid.mode-9 {
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
@@ -547,6 +584,11 @@
         .fullscreen-grid.mode-12 {
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(3, 1fr);
+        }
+        
+        .fullscreen-grid.mode-16 {
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
         }
         
         .fullscreen-item {
@@ -566,12 +608,17 @@
             background-color: #000;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .fullscreen-item video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
             width: 100%;
             height: 100%;
-            object-fit: contain;
         }
         
         .fullscreen-item .channel-name {
@@ -579,7 +626,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: transparent;
             padding: 8px 10px;
             font-size: 0.8rem;
             white-space: nowrap;
@@ -783,7 +830,6 @@
             }
         }
 
-        /* Miglioramenti per il layout generale */
         .multiscreen-container.active {
             display: flex;
         }
@@ -819,7 +865,7 @@
                     </div>
                     <div class="control-buttons">
                         <button class="btn" id="play-btn">Play</button>
-                        <button class="btn btn-secondary" id="pause-btn">Pausa</button>
+                        <button class="btn btn-secondary" id="stop-btn">Stop</button>
                         <button class="btn btn-secondary" id="mute-btn">Muto</button>
                         <button class="btn btn-secondary" id="fullscreen-btn">Schermo Intero</button>
                         <button class="btn btn-warning" id="reload-btn">Ricarica Stream</button>
@@ -859,8 +905,10 @@
                 <h2>Modalità Multischermo</h2>
                 <div class="multiscreen-controls">
                     <div class="multiscreen-mode-selector">
+                        <button class="mode-btn" data-mode="4">4 Canali</button>
                         <button class="mode-btn active" data-mode="9">9 Canali</button>
                         <button class="mode-btn" data-mode="12">12 Canali</button>
+                        <button class="mode-btn" data-mode="16">16 Canali</button>
                     </div>
                     <button class="btn" id="start-multiscreen">Avvia Multischermo</button>
                     <button class="btn btn-secondary" id="stop-multiscreen">Ferma Multischermo</button>
@@ -894,7 +942,7 @@
         const favoritesEmpty = document.getElementById('favorites-empty');
         const channelSearch = document.getElementById('channel-search');
         const playBtn = document.getElementById('play-btn');
-        const pauseBtn = document.getElementById('pause-btn');
+        const stopBtn = document.getElementById('stop-btn');
         const muteBtn = document.getElementById('mute-btn');
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         const reloadBtn = document.getElementById('reload-btn');
@@ -929,8 +977,10 @@
         let hlsInstances = {};
         let currentHls = null;
         let currentMultiscreenMode = '9';
-        const LOAD_TIMEOUT = 10000;
+        const LOAD_TIMEOUT = 5000;
         let retryCounters = {};
+        let collapsedGroups = {};
+        let currentCountryFilter = 'all';
 
         // Inizializzazione
         async function init() {
@@ -945,14 +995,24 @@
         // Carica i canali dal file M3U8
         async function loadChannelsFromM3U8() {
             try {
-                const response = await fetch('https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8');
+                const response = await fetch('https://iptv-org.github.io/iptv/index.m3u');
                 const m3u8Content = await response.text();
                 channels = parseM3U8(m3u8Content);
                 console.log(`Caricati ${channels.length} canali`);
+                // Inizializza collapsedGroups con tutti i gruppi collassati
+                const groups = [...new Set(channels.map(channel => channel.group))];
+                groups.forEach(group => {
+                    collapsedGroups[group] = true;
+                });
             } catch (error) {
                 console.error('Errore nel caricamento dei canali:', error);
                 showError('Errore nel caricamento dei canali. Utilizzo canali di esempio.');
                 channels = getFallbackChannels();
+                // Inizializza collapsedGroups per fallback
+                const groups = [...new Set(channels.map(channel => channel.group))];
+                groups.forEach(group => {
+                    collapsedGroups[group] = true;
+                });
             }
         }
 
@@ -1054,7 +1114,8 @@
                         currentChannel = {
                             name: name.trim(),
                             group: 'GENERAL',
-                            url: ''
+                            url: '',
+                            country: 'ITALIA' // Default
                         };
                         
                         const attributeMatches = attributes.match(/([a-zA-Z-]+)="([^"]*)"/g);
@@ -1066,6 +1127,11 @@
                                 
                                 if (cleanKey === 'group-title') {
                                     currentChannel.group = cleanValue || 'GENERAL';
+                                    // Estrai il paese dal group-title
+                                    const countryMatch = cleanValue.match(/([A-Z]{2,})/);
+                                    if (countryMatch) {
+                                        currentChannel.country = countryMatch[1];
+                                    }
                                 } else if (cleanKey === 'tvg-logo') {
                                     currentChannel.logo = cleanValue;
                                 }
@@ -1085,18 +1151,18 @@
         // Canali di fallback
         function getFallbackChannels() {
             return [
-                { name: "Rai 1", group: "ITALIA", url: "https://rai1.akamaized.net/hls/live/2032261/rai1_1/master.m3u8" },
-                { name: "Rai 2", group: "ITALIA", url: "https://rai2.akamaized.net/hls/live/2032262/rai2_1/master.m3u8" },
-                { name: "Rai 3", group: "ITALIA", url: "https://rai3.akamaized.net/hls/live/2032263/rai3_1/master.m3u8" },
-                { name: "Canale 5", group: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch01)/index.m3u8" },
-                { name: "BBC One", group: "INTERNAZIONALI", url: "https://bbcone.akamaized.net/hls/live/2032261/bbcone_1/master.m3u8" },
-                { name: "CNN", group: "INTERNAZIONALI", url: "https://turnerlive.turner.com/cnn/stream4/cnn_04.m3u8" },
-                { name: "Sky Sport", group: "SPORT", url: "https://skysport.akamaized.net/hls/live/2032261/skysport_1/master.m3u8" },
-                { name: "Discovery", group: "DOCUMENTARI", url: "https://discovery.akamaized.net/hls/live/2032261/discovery_1/master.m3u8" },
-                { name: "MTV", group: "MUSICA", url: "https://mtv.akamaized.net/hls/live/2032261/mtv_1/master.m3u8" },
-                { name: "National Geographic", group: "DOCUMENTARI", url: "https://natgeo.akamaized.net/hls/live/2032261/natgeo_1/master.m3u8" },
-                { name: "Fox", group: "INTRATTENIMENTO", url: "https://fox.akamaized.net/hls/live/2032261/fox_1/master.m3u8" },
-                { name: "HBO", group: "INTRATTENIMENTO", url: "https://hbo.akamaized.net/hls/live/2032261/hbo_1/master.m3u8" }
+                { name: "Rai 1", group: "ITALIA", country: "ITALIA", url: "https://rai1.akamaized.net/hls/live/2032261/rai1_1/master.m3u8" },
+                { name: "Rai 2", group: "ITALIA", country: "ITALIA", url: "https://rai2.akamaized.net/hls/live/2032262/rai2_1/master.m3u8" },
+                { name: "Rai 3", group: "ITALIA", country: "ITALIA", url: "https://rai3.akamaized.net/hls/live/2032263/rai3_1/master.m3u8" },
+                { name: "Canale 5", group: "ITALIA", country: "ITALIA", url: "https://live3-mediaset-it.akamaized.net/Content/hls_h0_clr_vos/live/channel(ch01)/index.m3u8" },
+                { name: "BBC One", group: "UK", country: "UK", url: "https://bbcone.akamaized.net/hls/live/2032261/bbcone_1/master.m3u8" },
+                { name: "CNN", group: "USA", country: "USA", url: "https://turnerlive.turner.com/cnn/stream4/cnn_04.m3u8" },
+                { name: "Sky Sport", group: "ITALIA", country: "ITALIA", url: "https://skysport.akamaized.net/hls/live/2032261/skysport_1/master.m3u8" },
+                { name: "Discovery", group: "USA", country: "USA", url: "https://discovery.akamaized.net/hls/live/2032261/discovery_1/master.m3u8" },
+                { name: "MTV", group: "USA", country: "USA", url: "https://mtv.akamaized.net/hls/live/2032261/mtv_1/master.m3u8" },
+                { name: "National Geographic", group: "USA", country: "USA", url: "https://natgeo.akamaized.net/hls/live/2032261/natgeo_1/master.m3u8" },
+                { name: "Fox", group: "USA", country: "USA", url: "https://fox.akamaized.net/hls/live/2032261/fox_1/master.m3u8" },
+                { name: "HBO", group: "USA", country: "USA", url: "https://hbo.akamaized.net/hls/live/2032261/hbo_1/master.m3u8" }
             ];
         }
 
@@ -1118,8 +1184,18 @@
                 return;
             }
             
+            // Filtra i canali per paese se necessario
+            const filteredChannels = currentCountryFilter === 'all' 
+                ? channels 
+                : channels.filter(channel => channel.country === currentCountryFilter);
+            
+            if (filteredChannels.length === 0) {
+                channelListContainer.innerHTML = '<div class="loading">Nessun canale disponibile per questo paese</div>';
+                return;
+            }
+            
             const groupedChannels = {};
-            channels.forEach(channel => {
+            filteredChannels.forEach(channel => {
                 if (!groupedChannels[channel.group]) {
                     groupedChannels[channel.group] = [];
                 }
@@ -1131,52 +1207,59 @@
             sortedGroups.forEach(group => {
                 const groupElement = document.createElement('div');
                 groupElement.className = 'channel-group';
-                groupElement.textContent = `${group} (${groupedChannels[group].length})`;
+                groupElement.innerHTML = `
+                    <span>${group} (${groupedChannels[group].length})</span>
+                    <span class="group-toggle">${collapsedGroups[group] ? '+' : '-'}</span>
+                `;
+                
+                groupElement.addEventListener('click', () => {
+                    toggleGroupCollapse(group);
+                });
+                
                 channelListContainer.appendChild(groupElement);
                 
-                groupedChannels[group].sort((a, b) => a.name.localeCompare(b.name));
-                
-                groupedChannels[group].forEach(channel => {
-                    const channelElement = document.createElement('div');
-                    channelElement.className = 'channel-item';
-                    channelElement.innerHTML = `
-                        <div class="channel-info">
-                            <div class="channel-logo">${channel.name.charAt(0)}</div>
-                            <div class="channel-name">${channel.name}</div>
-                        </div>
-                        <div>
-                            <button class="favorite-btn ${isFavorite(channel) ? 'active' : ''}" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}'>
-                                ${isFavorite(channel) ? '★' : '☆'}
-                            </button>
-                            <button class="add-to-multiscreen-btn" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}' title="Aggiungi a Multischermo">
-                                ➕
-                            </button>
-                        </div>
-                    `;
+                // Mostra/nascondi i canali del gruppo
+                if (!collapsedGroups[group]) {
+                    groupedChannels[group].sort((a, b) => a.name.localeCompare(b.name));
                     
-                    channelElement.addEventListener('click', (e) => {
-                        if (!e.target.classList.contains('favorite-btn') && !e.target.classList.contains('add-to-multiscreen-btn')) {
-                            selectChannel(channel);
-                        }
+                    groupedChannels[group].forEach(channel => {
+                        const channelElement = document.createElement('div');
+                        channelElement.className = 'channel-item';
+                        channelElement.innerHTML = `
+                            <div class="channel-info">
+                                <div class="channel-logo">${channel.name.charAt(0)}</div>
+                                <div class="channel-name">${channel.name}</div>
+                            </div>
+                            <div>
+                                <button class="favorite-btn ${isFavorite(channel) ? 'active' : ''}" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}'>
+                                    ${isFavorite(channel) ? '★' : '☆'}
+                                </button>
+                            </div>
+                        `;
+                        
+                        channelElement.addEventListener('click', (e) => {
+                            if (!e.target.classList.contains('favorite-btn')) {
+                                selectChannel(channel);
+                            }
+                        });
+                        
+                        const favoriteBtn = channelElement.querySelector('.favorite-btn');
+                        favoriteBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const channelData = JSON.parse(e.target.getAttribute('data-channel').replace(/&#39;/g, "'"));
+                            toggleFavorite(channelData);
+                        });
+                        
+                        channelListContainer.appendChild(channelElement);
                     });
-                    
-                    const favoriteBtn = channelElement.querySelector('.favorite-btn');
-                    favoriteBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const channelData = JSON.parse(e.target.getAttribute('data-channel').replace(/&#39;/g, "'"));
-                        toggleFavorite(channelData);
-                    });
-
-                    const addToMultiscreenBtn = channelElement.querySelector('.add-to-multiscreen-btn');
-                    addToMultiscreenBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const channelData = JSON.parse(e.target.getAttribute('data-channel').replace(/&#39;/g, "'"));
-                        addChannelToFirstAvailableSlot(channelData);
-                    });
-                    
-                    channelListContainer.appendChild(channelElement);
-                });
+                }
             });
+        }
+
+        // Attiva/disattiva la visualizzazione di un gruppo
+        function toggleGroupCollapse(group) {
+            collapsedGroups[group] = !collapsedGroups[group];
+            renderChannelList();
         }
 
         // Renderizzazione della lista preferiti
@@ -1202,9 +1285,6 @@
                         <button class="favorite-btn active" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}'>
                             ★
                         </button>
-                        <button class="add-to-multiscreen-btn" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}' title="Aggiungi a Multischermo">
-                            ➕
-                        </button>
                     </div>
                 `;
                 
@@ -1219,13 +1299,6 @@
                     e.stopPropagation();
                     const channelData = JSON.parse(e.target.getAttribute('data-channel').replace(/&#39;/g, "'"));
                     toggleFavorite(channelData);
-                });
-
-                const addToMultiscreenBtn = favoriteElement.querySelector('.add-to-multiscreen-btn');
-                addToMultiscreenBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const channelData = JSON.parse(e.target.getAttribute('data-channel').replace(/&#39;/g, "'"));
-                    addChannelToFirstAvailableSlot(channelData);
                 });
                 
                 favoritesContainer.appendChild(favoriteElement);
@@ -1245,7 +1318,10 @@
                 currentHls = new Hls({
                     enableWorker: false,
                     lowLatencyMode: true,
-                    backBufferLength: 90
+                    backBufferLength: 30,
+                    maxBufferLength: 30,
+                    maxMaxBufferLength: 30,
+                    startLevel: 0  // Inizia con qualità bassa per caricamento veloce
                 });
                 
                 currentHls.loadSource(channel.url);
@@ -1253,6 +1329,7 @@
                 
                 currentHls.on(Hls.Events.MANIFEST_PARSED, function() {
                     setupQualitySelector(currentHls.levels);
+                    mainVideo.play().catch(e => console.error("Errore riproduzione:", e));
                 });
                 
                 currentHls.on(Hls.Events.ERROR, function(event, data) {
@@ -1260,22 +1337,19 @@
                     if (data.fatal) {
                         switch(data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
-                                showError('Errore di rete. Tentativo di riconnessione...');
                                 currentHls.startLoad();
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
-                                showError('Errore media. Ricaricamento...');
                                 currentHls.recoverMediaError();
-                                break;
-                            default:
-                                showError('Errore irreversibile. Cambiare canale.');
-                                currentHls.destroy();
                                 break;
                         }
                     }
                 });
             } else if (mainVideo.canPlayType('application/vnd.apple.mpegurl')) {
                 mainVideo.src = channel.url;
+                mainVideo.addEventListener('loadedmetadata', () => {
+                    mainVideo.play().catch(e => console.error("Errore riproduzione:", e));
+                });
             } else {
                 showError('Il tuo browser non supporta la riproduzione di stream HLS.');
                 return;
@@ -1290,11 +1364,6 @@
                 if (channelName === channel.name) {
                     item.classList.add('active');
                 }
-            });
-            
-            mainVideo.play().catch(e => {
-                console.error("Errore nella riproduzione automatica:", e);
-                showError('Impossibile riprodurre automaticamente. Clicca Play manualmente.');
             });
         }
 
@@ -1344,8 +1413,14 @@
                 }
             });
             
-            pauseBtn.addEventListener('click', () => {
+            stopBtn.addEventListener('click', () => {
                 mainVideo.pause();
+                mainVideo.currentTime = 0;
+                if (currentHls) {
+                    currentHls.destroy();
+                    currentHls = null;
+                }
+                mainVideo.src = '';
             });
             
             muteBtn.addEventListener('click', () => {
@@ -1373,25 +1448,60 @@
             
             channelSearch.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
-                document.querySelectorAll('.channel-item').forEach(item => {
-                    const channelName = item.querySelector('.channel-name').textContent.toLowerCase();
-                    if (channelName.includes(searchTerm)) {
-                        item.style.display = 'flex';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
+                if (searchTerm === '') {
+                    renderChannelList();
+                    return;
+                }
                 
-                document.querySelectorAll('.channel-group').forEach(group => {
-                    const groupName = group.textContent;
-                    const hasVisibleItems = Array.from(group.parentNode.children).some((child, index) => {
-                        if (index > 0 && child.classList.contains('channel-item')) {
-                            return child.style.display !== 'none';
-                        }
-                        return false;
+                // Trova tutti i canali matching
+                const matchingChannels = channels.filter(channel => {
+                    return channel.name.toLowerCase().includes(searchTerm) &&
+                        (currentCountryFilter === 'all' || channel.country === currentCountryFilter);
+                }).sort((a, b) => a.name.localeCompare(b.name));
+                
+                // Pulisci il container
+                channelListContainer.innerHTML = '';
+                
+                // Aggiungi i risultati in alto
+                if (matchingChannels.length > 0) {
+                    const resultsGroup = document.createElement('div');
+                    resultsGroup.className = 'channel-group';
+                    resultsGroup.innerHTML = `<span>Risultati Ricerca (${matchingChannels.length})</span>`;
+                    channelListContainer.appendChild(resultsGroup);
+                    
+                    matchingChannels.forEach(channel => {
+                        const channelElement = document.createElement('div');
+                        channelElement.className = 'channel-item';
+                        channelElement.innerHTML = `
+                            <div class="channel-info">
+                                <div class="channel-logo">${channel.name.charAt(0)}</div>
+                                <div class="channel-name">${channel.name}</div>
+                            </div>
+                            <div>
+                                <button class="favorite-btn ${isFavorite(channel) ? 'active' : ''}" data-channel='${JSON.stringify(channel).replace(/'/g, "&#39;")}'>
+                                    ${isFavorite(channel) ? '★' : '☆'}
+                                </button>
+                            </div>
+                        `;
+                        
+                        channelElement.addEventListener('click', (e) => {
+                            if (!e.target.classList.contains('favorite-btn')) {
+                                selectChannel(channel);
+                            }
+                        });
+                        
+                        const favoriteBtn = channelElement.querySelector('.favorite-btn');
+                        favoriteBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const channelData = JSON.parse(e.target.getAttribute('data-channel').replace(/&#39;/g, "'"));
+                            toggleFavorite(channelData);
+                        });
+                        
+                        channelListContainer.appendChild(channelElement);
                     });
-                    group.style.display = hasVisibleItems ? 'block' : 'none';
-                });
+                } else {
+                    channelListContainer.innerHTML = '<div class="loading">Nessun risultato trovato</div>';
+                }
             });
             
             startMultiscreenBtn.addEventListener('click', startMultiscreen);
@@ -1410,6 +1520,18 @@
             saveFavoritesBtn.addEventListener('click', saveFavoritesToFile);
             loadFavoritesBtn.addEventListener('click', loadFavoritesFromFile);
             addCurrentToMultiscreenBtn.addEventListener('click', addCurrentChannelToMultiscreen);
+        }
+
+        // Ferma il player principale
+        function stopMainPlayer() {
+            if (mainVideo) {
+                mainVideo.pause();
+                mainVideo.currentTime = 0;
+            }
+            if (currentHls) {
+                currentHls.destroy();
+                currentHls = null;
+            }
         }
 
         // Aggiunge il canale corrente al multischermo
@@ -1467,10 +1589,12 @@
             
             document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
             const activeContent = tabContents[tabName];
-            activeContent.style.display = tabName === 'player' ? 'flex' : 'block';
+            activeContent.style.display = tabName === 'player' ? 'flex' : 'flex';
             activeContent.classList.add('active');
             
+            // Ferma il player principale quando si passa al multischermo
             if (tabName === 'multiscreen') {
+                stopMainPlayer();
                 setupMultiscreenGrid();
             }
         }
@@ -1481,7 +1605,7 @@
             multiscreenVideos = [];
             retryCounters = {};
             
-            const slotCount = currentMultiscreenMode === '12' ? 12 : 9;
+            const slotCount = parseInt(currentMultiscreenMode);
             
             for (let i = 0; i < slotCount; i++) {
                 const multiscreenItem = document.createElement('div');
@@ -1600,8 +1724,9 @@
                 slot.hls = new Hls({
                     enableWorker: false,
                     lowLatencyMode: true,
-                    maxMaxBufferLength: 30,
-                    maxBufferSize: 10 * 1000 * 1000
+                    maxMaxBufferLength: 15,
+                    maxBufferSize: 5 * 1000 * 1000,
+                    startLevel: 0  // Qualità bassa per caricamento veloce
                 });
                 
                 slot.hls.loadSource(channel.url);
@@ -1621,7 +1746,7 @@
                     if (data.fatal) {
                         retryCounters[slotIndex]++;
                         
-                        if (retryCounters[slotIndex] < 5) {
+                        if (retryCounters[slotIndex] < 3) {
                             console.log(`Tentativo ${retryCounters[slotIndex]} per slot ${slotIndex}, cambio canale...`);
                             const newChannel = channels[Math.floor(Math.random() * channels.length)];
                             setTimeout(() => {
@@ -1719,7 +1844,7 @@
             fullscreenGrid.innerHTML = '';
             fullscreenVideos = [];
             
-            const slotCount = currentMultiscreenMode === '12' ? 12 : 9;
+            const slotCount = parseInt(currentMultiscreenMode);
             
             for (let i = 0; i < slotCount; i++) {
                 const fullscreenItem = document.createElement('div');
@@ -1826,7 +1951,10 @@
             if (Hls.isSupported()) {
                 slot.hls = new Hls({
                     enableWorker: false,
-                    lowLatencyMode: true
+                    lowLatencyMode: true,
+                    maxMaxBufferLength: 15,
+                    maxBufferSize: 5 * 1000 * 1000,
+                    startLevel: 0
                 });
                 
                 slot.hls.loadSource(channel.url);
@@ -1866,7 +1994,7 @@
         function exitFullscreenMode() {
             fullscreenMode.classList.remove('active');
             
-            fullscreenVideos.forEach((slot, index) => {
+            fullscreenVideos.forEach((slot) => {
                 if (slot.hls) {
                     slot.hls.destroy();
                     clearTimeout(slot.timeoutId);
